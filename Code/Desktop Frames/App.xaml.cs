@@ -1,4 +1,5 @@
 ﻿using DesktopFrames;
+using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Linq;
@@ -16,6 +17,7 @@ namespace Desktop_Frames
         private static bool _desktopIsShown = false;
         private static Mutex _mutex;
         private const string UNIQUE_APP_NAME = "Global\\DesktopFramesPlus_Mutex_UniqueId_v2";
+        private EventHandler _displaySettingsHandler;
 
 
 
@@ -106,6 +108,11 @@ namespace Desktop_Frames
                         }));
                     };
 
+                    // Re-adjust frames when the display resolution or DPI changes (e.g. TV HDMI init)
+                    _displaySettingsHandler = (_, __) =>
+                        Dispatcher.BeginInvoke(new Action(Framemanager.RescheduleAndAdjustAllFrames));
+                    SystemEvents.DisplaySettingsChanged += _displaySettingsHandler;
+
                     // Initialize TrayManager BEFORE frames
                     _trayManager = new TrayManager();
                     _trayManager.InitializeTray();
@@ -186,6 +193,8 @@ namespace Desktop_Frames
 
         protected override void OnExit(ExitEventArgs e)
         {
+            if (_displaySettingsHandler != null)
+                SystemEvents.DisplaySettingsChanged -= _displaySettingsHandler;
             InterCore.Cleanup();
             try
             {

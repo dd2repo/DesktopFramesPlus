@@ -931,16 +931,35 @@ namespace Desktop_Frames
 
         private static double GetDpiScaleFactor(Window window)
         {
-            // Get the screen where the window is located based on its position
-            var screen = System.Windows.Forms.Screen.FromPoint(
-                new System.Drawing.Point((int)window.Left, (int)window.Top));
-
-            // Use Graphics to get the screen's DPI
-            using (var graphics = Graphics.FromHwnd(IntPtr.Zero))
+            // Use PresentationSource for accurate per-monitor DPI (window must be loaded/shown)
+            try
             {
-                float dpiX = graphics.DpiX; // Horizontal DPI
-                return dpiX / 96.0; // Standard DPI is 96, so scale factor = dpiX / 96
+                var source = PresentationSource.FromVisual(window);
+                if (source?.CompositionTarget != null)
+                    return source.CompositionTarget.TransformToDevice.M11;
             }
+            catch { }
+
+            // Fallback: derive scale from the window's HWND via WinForms screen
+            try
+            {
+                var helper = new WindowInteropHelper(window);
+                if (helper.Handle != IntPtr.Zero)
+                {
+                    var screen = System.Windows.Forms.Screen.FromHandle(helper.Handle);
+                    using (var graphics = Graphics.FromHwnd(helper.Handle))
+                        return graphics.DpiX / 96.0;
+                }
+            }
+            catch { }
+
+            // Last resort: system DPI
+            try
+            {
+                using (var graphics = Graphics.FromHwnd(IntPtr.Zero))
+                    return graphics.DpiX / 96.0;
+            }
+            catch { return 1.0; }
         }
 
 
@@ -3174,6 +3193,22 @@ namespace Desktop_Frames
         }
 
 
+        public static void RescheduleAndAdjustAllFrames()
+        {
+            // Delay adjustment so the display driver has time to report correct bounds (TV / HDMI timing)
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+            timer.Tick += (s, e) =>
+            {
+                timer.Stop();
+                if (System.Windows.Application.Current == null) return;
+                foreach (var win in System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>())
+                    AdjustFramePositionToScreen(win);
+                FrameDataManager.SaveFrameData();
+                LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.FrameUpdate, "Re-adjusted all frames after display settings change.");
+            };
+            timer.Start();
+        }
+
         public static void LoadAndCreateFrames(TargetChecker targetChecker)
         {
             // Get current program version from assembly
@@ -4332,10 +4367,10 @@ namespace Desktop_Frames
             }
             bool isHidden = isHiddenString == "true";
             LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.Settings, $"Frame '{frame.Title}' IsHidden state: {isHidden}");
-            // Adjust the frame position to ensure it fits within screen bounds
-            AdjustFramePositionToScreen(win);
             win.Loaded += (s, e) =>
             {
+                // Adjust position after window is shown so PresentationSource (per-monitor DPI) is available
+                AdjustFramePositionToScreen(win);
                 UpdateLockState(lockIcon, frame, null, saveToJson: false);
                 LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.FrameCreation, $"Applied lock state for frame '{frame.Title}' on load: IsLocked={frame.IsLocked?.ToString().ToLower()}");
                 // Apply IsRolled state
