@@ -25,21 +25,45 @@ namespace Desktop_Frames
         {
             try
             {
-                var border = frameWindow.Content as Border;
-                var dockPanel = border?.Child as DockPanel;
+                // Support both old (Border as content) and new (outer DockPanel) window structure
+                var outerDock = frameWindow.Content as DockPanel;
+                Border border;
+                DockPanel dockPanel;
+
+                if (outerDock?.Tag?.ToString() == "OUTER_FRAME_DOCK")
+                {
+                    border = outerDock.Children.OfType<Border>().FirstOrDefault();
+                    dockPanel = border?.Child as DockPanel;
+                }
+                else
+                {
+                    border = frameWindow.Content as Border;
+                    dockPanel = border?.Child as DockPanel;
+                }
                 if (dockPanel == null) return;
 
                 // 1. CAPTURE SCROLL STATE
                 double previousScrollOffset = 0;
-                var oldContainer = dockPanel.Children.OfType<Grid>()
+                // Check both locations for existing strip
+                Grid oldContainerOuter = outerDock?.Children.OfType<Grid>()
                     .FirstOrDefault(g => g.Tag?.ToString() == "TAB_STRIP_CONTAINER");
+                Grid oldContainerInner = dockPanel.Children.OfType<Grid>()
+                    .FirstOrDefault(g => g.Tag?.ToString() == "TAB_STRIP_CONTAINER");
+                var oldContainer = oldContainerOuter ?? oldContainerInner;
                 if (oldContainer != null)
                 {
                     var oldScroll = oldContainer.Children.OfType<ScrollViewer>().FirstOrDefault();
                     if (oldScroll != null) previousScrollOffset = oldScroll.HorizontalOffset;
                 }
 
-                // 2. CLEANUP
+                // 2. CLEANUP — remove from both outer and inner
+                if (outerDock != null)
+                {
+                    var toRemove = outerDock.Children.OfType<FrameworkElement>()
+                        .Where(c => c is Grid g && (g.Tag?.ToString() == "TAB_STRIP_CONTAINER" || g.Tag?.ToString() == "OUTER_TAB_SLOT"))
+                        .ToList();
+                    foreach (var r in toRemove) outerDock.Children.Remove(r);
+                }
                 var existingStrips = dockPanel.Children.OfType<FrameworkElement>()
                     .Where(c => c is Grid g && g.Tag?.ToString() == "TAB_STRIP_CONTAINER" ||
                                 c is StackPanel sp && sp.Height == 20)
@@ -81,9 +105,9 @@ namespace Desktop_Frames
                 Grid containerGrid = new Grid
                 {
                     Tag = "TAB_STRIP_CONTAINER",
-                    Height = 20,
-                    Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(20, 0, 0, 0)),
-                    Margin = new Thickness(0, 1, 0, 0),
+                    Height = 26,
+                    Background = System.Windows.Media.Brushes.Transparent,
+                    Margin = new Thickness(4, 2, 4, 0),
                     VerticalAlignment = VerticalAlignment.Top
                 };
 
@@ -175,12 +199,12 @@ namespace Desktop_Frames
                     {
                         Content = tabName,
                         Tag = i,
-                        Height = 18,
-                        MinWidth = 50,
-                        Margin = new Thickness(1, 0, 1, 0),
-                        Padding = new Thickness(10, 2, 10, 2),
-                        FontSize = 10,
-                        FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
+                        Height = 24,
+                        MinWidth = 60,
+                        Margin = new Thickness(2, 0, 2, 0),
+                        Padding = new Thickness(12, 3, 12, 3),
+                        FontSize = 11,
+                        FontFamily = new System.Windows.Media.FontFamily(SettingsManager.GlobalFontFamily),
                         Cursor = Cursors.Hand,
                         Focusable = false
                     };
@@ -255,15 +279,15 @@ namespace Desktop_Frames
                 {
                     Content = "+",
                     Tag = "ADD_TAB",
-                    Height = 18,
-                    Width = 25,
-                    Margin = new Thickness(3, 0, 1, 0),
-                    FontSize = 12,
-                    FontWeight = FontWeights.Bold,
-                    FontFamily = new System.Windows.Media.FontFamily("Segoe UI"),
-                    BorderThickness = new Thickness(1),
+                    Height = 24,
+                    Width = 28,
+                    Margin = new Thickness(3, 0, 2, 0),
+                    FontSize = 14,
+                    FontWeight = FontWeights.Light,
+                    FontFamily = new System.Windows.Media.FontFamily("Segoe UI Variable Display"),
+                    BorderThickness = new Thickness(0),
                     Cursor = Cursors.Hand,
-                    ToolTip = Strings.TabAddNewHint, // Updated Tooltip
+                    ToolTip = Strings.TabAddNewHint,
                     Focusable = false
                 };
 
@@ -293,34 +317,37 @@ namespace Desktop_Frames
                 containerGrid.Children.Add(addTabButton);
                 Grid.SetColumn(addTabButton, 3); // Col 3 is for the Button
 
-                // 11. SURGICAL INSERTION
-                DockPanel.SetDock(containerGrid, Dock.Top);
-
-                int insertIndex = 0;
-                bool titleFound = false;
-                for (int i = 0; i < dockPanel.Children.Count; i++)
+                // 11. INSERTION — place tab strip above the frame background if outer dock exists
+                if (outerDock?.Tag?.ToString() == "OUTER_FRAME_DOCK")
                 {
-                    if (dockPanel.Children[i] is Grid g)
+                    // Insert at index 0 (before the Border), so tabs float above the frame background
+                    DockPanel.SetDock(containerGrid, Dock.Top);
+                    outerDock.Children.Insert(0, containerGrid);
+                }
+                else
+                {
+                    // Fallback: insert inside inner DockPanel after title grid
+                    DockPanel.SetDock(containerGrid, Dock.Top);
+                    int insertIndex = 0;
+                    bool titleFound = false;
+                    for (int i = 0; i < dockPanel.Children.Count; i++)
                     {
-                        if (g.Children.OfType<TextBlock>().Any(tb => tb.Name == "FrameLockIcon"))
+                        if (dockPanel.Children[i] is Grid g &&
+                            g.Children.OfType<TextBlock>().Any(tb => tb.Name == "FrameLockIcon"))
                         {
                             insertIndex = i + 1;
                             titleFound = true;
                             break;
                         }
                     }
+                    if (!titleFound) insertIndex = 0;
+                    if (insertIndex < dockPanel.Children.Count &&
+                        dockPanel.Children[insertIndex] is Grid potentialFilter &&
+                        potentialFilter.Children.OfType<ComboBox>().Any())
+                        insertIndex++;
+                    if (insertIndex > dockPanel.Children.Count) insertIndex = dockPanel.Children.Count;
+                    dockPanel.Children.Insert(insertIndex, containerGrid);
                 }
-                if (!titleFound) insertIndex = 0;
-
-                if (insertIndex < dockPanel.Children.Count &&
-                    dockPanel.Children[insertIndex] is Grid potentialFilter &&
-                    potentialFilter.Children.OfType<ComboBox>().Any())
-                {
-                    insertIndex++;
-                }
-
-                if (insertIndex > dockPanel.Children.Count) insertIndex = dockPanel.Children.Count;
-                dockPanel.Children.Insert(insertIndex, containerGrid);
 
                 // 12. RESTORE SCROLL (Async to allow layout pass)
                 if (previousScrollOffset > 0)

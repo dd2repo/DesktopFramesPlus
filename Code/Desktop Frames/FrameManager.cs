@@ -3715,6 +3715,24 @@ namespace Desktop_Frames
         }
 
 
+        // Wraps the frame border in an outer DockPanel so the tab strip can live
+        // above the semi-transparent frame background rather than inside it.
+        private static DockPanel BuildOuterContent(Border cborder)
+        {
+            var outer = new DockPanel
+            {
+                Tag = "OUTER_FRAME_DOCK",
+                Background = System.Windows.Media.Brushes.Transparent,
+                LastChildFill = true
+            };
+            // Placeholder row that TabManager will replace with the real tab strip
+            var tabSlot = new Grid { Tag = "OUTER_TAB_SLOT" };
+            DockPanel.SetDock(tabSlot, Dock.Top);
+            outer.Children.Add(tabSlot);
+            outer.Children.Add(cborder);
+            return outer;
+        }
+
         public static void CreateFrame(dynamic frame, TargetChecker targetChecker)
         {
 
@@ -4085,7 +4103,7 @@ namespace Desktop_Frames
                 Title = frame.Title?.ToString() ?? "New Frame", // Handle null title
                 ShowInTaskbar = false,
                 WindowStyle = WindowStyle.None,
-                Content = cborder,
+                Content = BuildOuterContent(cborder),
                 ResizeMode = frame.IsLocked?.ToString().ToLower() == "true" ? ResizeMode.NoResize : ResizeMode.CanResizeWithGrip,
                 Topmost = frame.AlwaysOnTop?.ToString().ToLower() == "true", // --- NEW: Apply Always On Top ---
                 // ResizeMode = ResizeMode.CanResizeWithGrip,
