@@ -80,7 +80,11 @@ namespace Desktop_Frames
 
         // --- NEW: Portal Details View Defaults ---
         public static string DefaultPortalView { get; set; } = "Icons"; // "Icons" or "Details"
-        public static string GlobalFontFamily { get; set; } = "Segoe UI";
+        public static string GlobalFontFamily { get; set; } = "Segoe UI Variable Display";
+
+        // --- Global Frame Style ---
+        public static bool UseGlobalFrameStyle { get; set; } = false;
+        public static int GlobalFrameAlpha { get; set; } = 40; // 0=fully transparent, 100=fully opaque
         public static int DefaultItemFontSize { get; set; } = 12;
 
         // --- NEW: Hidden Plugin Tier System ---
@@ -259,6 +263,8 @@ namespace Desktop_Frames
                 Language,
                 GlobalFontFamily,
                 DefaultItemFontSize,
+                UseGlobalFrameStyle,
+                GlobalFrameAlpha,
                 PluginAvailabilityLevel,
 
                 // Auto-Hide
@@ -354,7 +360,9 @@ namespace Desktop_Frames
             try { EnableContextMenu = data.EnableContextMenu ?? false; } catch { EnableContextMenu = false; }
             try { DefaultPortalView = data.DefaultPortalView?.ToString() ?? "Icons"; } catch { DefaultPortalView = "Icons"; }
             try { Language = data.Language?.ToString() ?? ""; } catch { Language = ""; }
-            try { GlobalFontFamily = data.GlobalFontFamily?.ToString() ?? "Segoe UI"; } catch { GlobalFontFamily = "Segoe UI"; }
+            try { GlobalFontFamily = data.GlobalFontFamily?.ToString() ?? "Segoe UI Variable Display"; } catch { GlobalFontFamily = "Segoe UI Variable Display"; }
+            try { UseGlobalFrameStyle = data.UseGlobalFrameStyle ?? false; } catch { UseGlobalFrameStyle = false; }
+            try { GlobalFrameAlpha = data.GlobalFrameAlpha ?? 40; } catch { GlobalFrameAlpha = 40; }
             try { DefaultItemFontSize = data.DefaultItemFontSize ?? 12; } catch { DefaultItemFontSize = 12; }
             try { PluginAvailabilityLevel = data.PluginAvailabilityLevel ?? 1; } catch { PluginAvailabilityLevel = 1; }
 

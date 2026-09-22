@@ -354,20 +354,18 @@ namespace Desktop_Frames
                     var lockIcon = FindChild<TextBlock>(win, "FrameLockIcon");
                     if (lockIcon != null)
                     {
-                        lockIcon.Text = lockSymbol;
+                        // Glyph and color are managed by UpdateLockState; only refresh opacity here
                         lockIcon.BeginAnimation(UIElement.OpacityProperty, null);
                         lockIcon.Opacity = iconOpacity;
+                    }
 
-                        // Re-apply Lock Color (Red/White)
-                        bool isLocked = false;
-                        if (FrameData != null)
-                        {
-                            string lockedStr = null;
-                            if (FrameData is Newtonsoft.Json.Linq.JObject j) lockedStr = j["IsLocked"]?.ToString();
-                            else try { lockedStr = FrameData.IsLocked?.ToString(); } catch { }
-                            isLocked = lockedStr?.ToLower() == "true";
-                        }
-                        lockIcon.Foreground = isLocked ? System.Windows.Media.Brushes.Red : System.Windows.Media.Brushes.White;
+                    // Update frame background transparency
+                    var frameBorder = win.Content as System.Windows.Controls.Border;
+                    if (frameBorder != null)
+                    {
+                        byte alpha = (byte)(SettingsManager.GlobalFrameAlpha * 255 / 100);
+                        frameBorder.Background = new System.Windows.Media.SolidColorBrush(
+                            System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
                     }
 
                     // 5. Update Note Text Contrast (if applicable)

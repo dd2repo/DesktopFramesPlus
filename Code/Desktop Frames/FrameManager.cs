@@ -1146,21 +1146,10 @@ namespace Desktop_Frames
                     <Setter Property='Template'>
                         <Setter.Value>
                             <ControlTemplate TargetType='ContextMenu'>
-                                <Border Background='{{TemplateBinding Background}}' BorderBrush='#555555' BorderThickness='1' Padding='1'>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width='30'/>
-                                            <ColumnDefinition Width='*'/>
-                                        </Grid.ColumnDefinitions>
-                                        
-                                    <Border Grid.Column='0' Background='#151515'>
-                                            <Image Source='pack://application:,,,/Resources/DesktopFramesVertical.png' Stretch='Uniform' VerticalAlignment='Top' Margin='0,5,0,0'/>
-                                        </Border>
-                                        
-                                        <ScrollViewer Grid.Column='1' Margin='2,0,0,0' VerticalScrollBarVisibility='Hidden'>
-                                            <ItemsPresenter KeyboardNavigation.DirectionalNavigation='Cycle'/>
-                                        </ScrollViewer>
-                                    </Grid>
+                                <Border Background='{{TemplateBinding Background}}' BorderBrush='#444444' BorderThickness='1' CornerRadius='4' Padding='2'>
+                                    <ScrollViewer VerticalScrollBarVisibility='Hidden'>
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation='Cycle'/>
+                                    </ScrollViewer>
                                 </Border>
                             </ControlTemplate>
                         </Setter.Value>
@@ -3786,7 +3775,7 @@ namespace Desktop_Frames
             }
             Border cborder = new Border
             {
-                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(100, 0, 0, 0)),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)(SettingsManager.GlobalFrameAlpha * 255 / 100), 0, 0, 0)),
                 // --- APPLY HIDDEN SETTING: Sharp corners if enabled, otherwise default 6px round ---
                 CornerRadius = SettingsManager.FramesWithNoRoundCorners ? new CornerRadius(0) : new CornerRadius(6),
                 BorderBrush = borderBrush, // Apply border color
@@ -4870,37 +4859,32 @@ namespace Desktop_Frames
             {
                 titleTextBrush = System.Windows.Media.Brushes.White; // Fallback
             }
-            // Get title text size from frame data
-            double titleFontSize = 12; // Default Medium size
+            // Get title text size — global style overrides per-frame if enabled
+            double titleFontSize = 12;
             try
             {
-                string titleSizeValue = frame.TitleTextSize?.ToString() ?? "Medium";
+                string titleSizeValue = SettingsManager.UseGlobalFrameStyle
+                    ? "Medium"
+                    : (frame.TitleTextSize?.ToString() ?? "Medium");
                 switch (titleSizeValue)
                 {
-                    case "Small":
-                        titleFontSize = 10;
-                        break;
-                    case "Large":
-                        titleFontSize = 16;
-                        break;
-                    default: // Medium
-                        titleFontSize = 12;
-                        break;
+                    case "Small":  titleFontSize = 10; break;
+                    case "Large":  titleFontSize = 16; break;
+                    default:       titleFontSize = 12; break;
                 }
             }
-            catch
-            {
-                titleFontSize = 12; // Fallback to Medium
-            }
+            catch { titleFontSize = 12; }
+
             Label titlelabel = new Label
             {
                 Content = frame.Title.ToString(),
-                Foreground = titleTextBrush, // Changed from hardcoded White
+                Foreground = titleTextBrush,
                 HorizontalContentAlignment = HorizontalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Cursor = Cursors.SizeAll,
-                FontWeight = isBoldTitle ? FontWeights.Bold : FontWeights.Normal,
-                FontSize = titleFontSize // Apply custom title text size
+                FontFamily = new System.Windows.Media.FontFamily(SettingsManager.GlobalFontFamily),
+                FontWeight = isBoldTitle ? FontWeights.Bold : FontWeights.SemiBold,
+                FontSize = titleFontSize
             };
             Grid.SetColumn(titlelabel, 1);
             titleGrid.Children.Add(titlelabel);
@@ -7746,9 +7730,10 @@ namespace Desktop_Frames
 
 
             {
-                // Update lock icon
-                lockIcon.Foreground = isLocked ? System.Windows.Media.Brushes.DeepPink : System.Windows.Media.Brushes.White;
-                lockIcon.ToolTip = isLocked ? "Frame is locked (click to unlock)" : "frame is unlocked (click to lock)";
+                // Update lock icon: swap glyph (closed/open padlock), always white
+                lockIcon.Text = isLocked ? "" : "";
+                lockIcon.Foreground = System.Windows.Media.Brushes.White;
+                lockIcon.ToolTip = isLocked ? "Frame is locked (click to unlock)" : "Frame is unlocked (click to lock)";
 
                 // Find the NonActivatingWindow
                 NonActivatingWindow win = FindVisualParent<NonActivatingWindow>(lockIcon);

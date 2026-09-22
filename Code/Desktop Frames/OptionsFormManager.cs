@@ -546,6 +546,34 @@ namespace Desktop_Frames
 
 
 
+            // --- Global Frame Style ---
+            CreateSectionHeader(c, "Globale Frame-Einstellungen", ColorStyle);
+            CreateCheckBox(c, "Globale Einstellungen für alle Frames aktivieren", "UseGlobalFrameStyle", SettingsManager.UseGlobalFrameStyle);
+
+            StackPanel alphaPanel = new StackPanel { Margin = new Thickness(15, 4, 0, 4) };
+            alphaPanel.Children.Add(new TextBlock { Text = "Frame-Transparenz (0 = unsichtbar, 100 = voll sichtbar)", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 2) });
+            Grid alphaGrid = new Grid { Margin = new Thickness(0, 0, 0, 4) };
+            alphaGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(205) });
+            alphaGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(15) });
+            alphaGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(45) });
+            var alphaSlider = new Slider { Name = "GlobalFrameAlphaSlider", Minimum = 5, Maximum = 100, Value = SettingsManager.GlobalFrameAlpha, TickFrequency = 5, IsSnapToTickEnabled = true, VerticalAlignment = VerticalAlignment.Center };
+            var alphaLabel = new TextBlock { Text = $"{SettingsManager.GlobalFrameAlpha}%", VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(8, 0, 0, 0) };
+            alphaSlider.ValueChanged += (s, e) => alphaLabel.Text = $"{(int)alphaSlider.Value}%";
+            Grid.SetColumn(alphaSlider, 0); Grid.SetColumn(alphaLabel, 2);
+            alphaGrid.Children.Add(alphaSlider); alphaGrid.Children.Add(alphaLabel);
+            alphaPanel.Children.Add(alphaGrid);
+            c.Children.Add(alphaPanel);
+
+            StackPanel fontPanel = new StackPanel { Margin = new Thickness(15, 4, 0, 12) };
+            fontPanel.Children.Add(new TextBlock { Text = "Schriftart für Frame-Titel", FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 4) });
+            var fontCombo = new ComboBox { Name = "GlobalFontFamilyCombo", Width = 260, HorizontalAlignment = HorizontalAlignment.Left, Height = 26 };
+            foreach (var f in new[] { "Segoe UI Variable Display", "Segoe UI", "Segoe UI Light", "Segoe UI Semibold", "Arial", "Calibri", "Tahoma" })
+                fontCombo.Items.Add(new ComboBoxItem { Content = f, Tag = f, FontFamily = new FontFamily(f) });
+            fontCombo.SelectedItem = fontCombo.Items.OfType<ComboBoxItem>().FirstOrDefault(i => i.Tag?.ToString() == SettingsManager.GlobalFontFamily)
+                ?? fontCombo.Items.OfType<ComboBoxItem>().FirstOrDefault();
+            fontPanel.Children.Add(fontCombo);
+            c.Children.Add(fontPanel);
+
             // --- Icons Section ---
             CreateSectionHeader(c, Strings.SecIcons, ColorStyle);
             Grid iconGrid = new Grid { Margin = new Thickness(15, 5, 0, 15) };
@@ -1104,6 +1132,7 @@ namespace Desktop_Frames
                     {
                         if (cb.Name == "EnableChameleon") SettingsManager.EnableChameleonMode = cb.IsChecked == true;
                         if (cb.Name == "ApplyTintToIcons") SettingsManager.ApplyTintToIcons = cb.IsChecked == true;
+                        if (cb.Name == "UseGlobalFrameStyle") SettingsManager.UseGlobalFrameStyle = cb.IsChecked == true;
                         // NEW: Auto-Hide & Fade Options (Moved from General)
                         if (cb.Name == "AutoHideFrames") { SettingsManager.AutoHideFrames = cb.IsChecked == true; Framemanager.ResetAutoHideTimer(); }
 
@@ -1131,6 +1160,14 @@ namespace Desktop_Frames
                         var fadeOutTime = g.Children.OfType<Slider>().FirstOrDefault(s => s.Name == "FadeOutTimeSlider"); if (fadeOutTime != null) SettingsManager.FadeOutTime = (int)fadeOutTime.Value;
                         var fadeOutAlpha = g.Children.OfType<Slider>().FirstOrDefault(s => s.Name == "FadeOutAlphaSlider"); if (fadeOutAlpha != null) SettingsManager.FadeOutFxTargetAlpha = fadeOutAlpha.Value / 100.0;
                         var autoRollTime = g.Children.OfType<Slider>().FirstOrDefault(s => s.Name == "AutoRollTimeSlider"); if (autoRollTime != null) SettingsManager.AutoRollTime = (int)autoRollTime.Value;
+                        var globalAlpha = g.Children.OfType<Slider>().FirstOrDefault(s => s.Name == "GlobalFrameAlphaSlider"); if (globalAlpha != null) SettingsManager.GlobalFrameAlpha = (int)globalAlpha.Value;
+
+                        // Global font family combo
+                        foreach (var sp in g.Children.OfType<StackPanel>())
+                        {
+                            var fontCb = sp.Children.OfType<ComboBox>().FirstOrDefault(x => x.Name == "GlobalFontFamilyCombo");
+                            if (fontCb?.SelectedItem is ComboBoxItem fi && fi.Tag is string fTag) SettingsManager.GlobalFontFamily = fTag;
+                        }
 
                         // Parse Icons from the new side-by-side nested Grid layout
                         foreach (var innerChild in g.Children.OfType<StackPanel>())
