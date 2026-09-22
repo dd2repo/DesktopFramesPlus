@@ -1,4 +1,4 @@
-﻿using Desktop_Frames.Localization;
+using Desktop_Frames.Localization;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -554,11 +554,11 @@ namespace Desktop_Frames
 
             StackPanel menuIconPanel = new StackPanel();
             menuIconPanel.Children.Add(new TextBlock { Text = Strings.LblMenuIcon, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 0) });
-            CreateIconRadioButtonGroup(menuIconPanel, "MenuIconGroup", new Dictionary<string, int> { { "♥", 0 }, { "☰", 1 }, { "≣", 2 }, { "𓃑", 3 } }, SettingsManager.MenuIcon);
+            CreateIconRadioButtonGroup(menuIconPanel, "MenuIconGroup", new Dictionary<string, int> { { "", 0 }, { "", 1 }, { "", 2 }, { "", 3 } }, SettingsManager.MenuIcon);
 
             StackPanel lockIconPanel = new StackPanel();
             lockIconPanel.Children.Add(new TextBlock { Text = Strings.LblLockIcon, FontWeight = FontWeights.SemiBold, Margin = new Thickness(0, 0, 0, 0) });
-            CreateIconRadioButtonGroup(lockIconPanel, "LockIconGroup", new Dictionary<string, int> { { "🛡️", 0 }, { "🔑", 1 }, { "🔐", 2 }, { "🔒", 3 } }, SettingsManager.LockIcon);
+            CreateIconRadioButtonGroup(lockIconPanel, "LockIconGroup", new Dictionary<string, int> { { "", 0 }, { "", 1 }, { "", 2 }, { "", 3 } }, SettingsManager.LockIcon);
 
             Grid.SetColumn(menuIconPanel, 0);
             Grid.SetColumn(lockIconPanel, 1);
@@ -921,7 +921,7 @@ namespace Desktop_Frames
         private static void CreateIconRadioButtonGroup(StackPanel p, string gName, Dictionary<string, int> icons, int sel)
         {
             StackPanel sp = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(15, 5, 0, 15), Tag = gName };
-            foreach (var i in icons) sp.Children.Add(new RadioButton { Content = i.Key, Tag = i.Value, GroupName = gName, IsChecked = i.Value == sel, Margin = new Thickness(0, 0, 15, 0), FontSize = 16, FontFamily = new FontFamily("Segoe UI Symbol") });
+            foreach (var i in icons) sp.Children.Add(new RadioButton { Content = i.Key, Tag = i.Value, GroupName = gName, IsChecked = i.Value == sel, Margin = new Thickness(0, 0, 15, 0), FontSize = 16, FontFamily = new FontFamily("Segoe MDL2 Assets") });
             p.Children.Add(sp);
         }
 

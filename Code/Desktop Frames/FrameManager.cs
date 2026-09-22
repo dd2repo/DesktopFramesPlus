@@ -1,4 +1,4 @@
-﻿using Desktop_Frames.Localization;
+using Desktop_Frames.Localization;
 using IWshRuntimeLibrary;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -3769,40 +3769,38 @@ namespace Desktop_Frames
             };
 
 
-            //  Add heart symbol in top-left corner
-            string MenuSymbol = "♥";
+            // Menu icon (top-left corner) — Segoe MDL2 Assets glyphs
+            string MenuSymbol = ""; // GlobalNavigationButton (hamburger)
 
             if (SettingsManager.MenuIcon == 0)
             {
-                MenuSymbol = "♥";
-              
+                MenuSymbol = ""; // GlobalNavigationButton (hamburger)
             }
             else if (SettingsManager.MenuIcon == 1)
             {
-                MenuSymbol = "☰";
+                MenuSymbol = ""; // More (horizontal dots)
             }
             else if (SettingsManager.MenuIcon == 2)
             {
-                MenuSymbol = "≣";
+                MenuSymbol = ""; // Settings gear
             }
             else if (SettingsManager.MenuIcon == 3)
             {
-                MenuSymbol = "𓃑";
+                MenuSymbol = ""; // Apps grid
             }
 
             TextBlock heart = new TextBlock
             {
-                // Text = "♥",
-
-                Name = "FrameMenuIcon", // New! Name
+                Name = "FrameMenuIcon",
                 Text = MenuSymbol,
-                FontSize = 22,
-                Foreground = System.Windows.Media.Brushes.White, // Match title and icon text color
-                Margin = new Thickness(5, -3, 0, 0), // Position top-left, aligned with title
+                FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontSize = 16,
+                Foreground = System.Windows.Media.Brushes.White,
+                Margin = new Thickness(5, 0, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
                 Cursor = Cursors.Hand,
-                Opacity = (double)SettingsManager.MenuTintValue / 100 // 0.3 // Lower tint by default
+                Opacity = (double)SettingsManager.MenuTintValue / 100
 
             };
   
@@ -3880,39 +3878,34 @@ namespace Desktop_Frames
             // Add a protection symbol in top-right corner
 
 
-            string LockSymbol = "🛡️";
+            string LockSymbol = "";
 
             if (SettingsManager.LockIcon == 0)
             {
-                LockSymbol = "🛡️";
+                LockSymbol = "";
             }
             else if (SettingsManager.LockIcon == 1)
             {
-                LockSymbol = "🔑";
+                LockSymbol = "";
             }
             else if (SettingsManager.LockIcon == 2)
             {
-                LockSymbol = "🔐";
+                LockSymbol = "";
             }
             else if (SettingsManager.LockIcon == 3)
             {
-                LockSymbol = "🔒";
+                LockSymbol = "";
             }
 
             //MessageBox.Show(SettingsManager.LockIcon +" " + LockSymbol.ToString());
 
 
             TextBlock lockIcon = new TextBlock
-           
             {
-
-                //     Text = "🔐",
-                //     Text = "🔑",
-                //     Text = "🔒",
-                //     Text = "🔓",
-                Name = "FrameLockIcon", // New! Name
-                Text = LockSymbol,//"🛡️",
-                                FontSize = 14,
+                Name = "FrameLockIcon",
+                Text = LockSymbol,
+                FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontSize = 16,
                 Foreground = frame.IsLocked?.ToString().ToLower() == "true" ? System.Windows.Media.Brushes.Red : System.Windows.Media.Brushes.White,
                 Margin = new Thickness(0, 3, 2, 0), // Adjusted for top-right positioning
                 HorizontalAlignment = HorizontalAlignment.Right,

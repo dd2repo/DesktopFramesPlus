@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices; // Added for DeleteObject
@@ -271,8 +271,8 @@ namespace Desktop_Frames
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
             {
                 // 1. Prepare Symbols
-                string[] menuSymbols = { "♥", "☰", "≣", "𓃑" };
-                string[] lockSymbols = { "🛡️", "🔑", "🔐", "🔒" };
+                string[] menuSymbols = { "", "", "", "" };
+                string[] lockSymbols = { "", "", "", "" };
 
                 int menuIdx = SettingsManager.MenuIcon;
                 if (menuIdx < 0 || menuIdx >= menuSymbols.Length) menuIdx = 0;
