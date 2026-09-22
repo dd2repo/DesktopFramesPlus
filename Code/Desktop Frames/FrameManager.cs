@@ -3828,7 +3828,7 @@ namespace Desktop_Frames
             {
                 Name = "FrameMenuIcon",
                 Text = MenuSymbol,
-                FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets"),
                 FontSize = 16,
                 Foreground = System.Windows.Media.Brushes.White,
                 Margin = new Thickness(5, 0, 0, 0),
@@ -3939,7 +3939,7 @@ namespace Desktop_Frames
             {
                 Name = "FrameLockIcon",
                 Text = LockSymbol,
-                FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets"),
                 FontSize = 16,
                 Foreground = frame.IsLocked?.ToString().ToLower() == "true" ? System.Windows.Media.Brushes.Red : System.Windows.Media.Brushes.White,
                 Margin = new Thickness(0, 3, 2, 0), // Adjusted for top-right positioning
