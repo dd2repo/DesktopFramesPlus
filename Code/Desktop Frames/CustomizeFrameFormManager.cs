@@ -410,96 +410,84 @@ namespace Desktop_Frames
 
             // Add buttons in the new order: Default -> Apply -> Cancel -> Save
             buttonPanel.Children.Add(defaultButton);
+            MakeRounded(defaultButton);
             buttonPanel.Children.Add(_btnApply);
+            MakeRounded(_btnApply);
             buttonPanel.Children.Add(cancelButton);
+            MakeRounded(cancelButton);
             buttonPanel.Children.Add(_btnSave);
+            MakeRounded(_btnSave);
 
             footerBorder.Child = buttonPanel;
             parent.Children.Add(footerBorder);
         }
 
-        private void CreateFrameSection(StackPanel parent)
+                private void CreateFrameSection(StackPanel parent)
         {
-            GroupBox frameGroupBox = new GroupBox
-            {
-                Header = Strings.TabFrame,
-                FontFamily = new FontFamily("Segoe UI Variable Display"),
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(_userAccentColor),
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(8)
-            };
-
-            StackPanel frameStack = new StackPanel { Orientation = Orientation.Vertical };
-
-            CreateDropdownField(frameStack, Strings.LblCustomColor, _validColors, out _cmbCustomColor);
-            CreateDropdownField(frameStack, Strings.LblCustomLaunchEffect, _validEffects, out _cmbCustomLaunchEffect);
-            CreateDropdownField(frameStack, Strings.LblFrameBorderColor, _validColors, out _cmbframeBorderColor);
-            CreateNumericField(frameStack, Strings.LblFrameBorderThickness, 0, 5, out _nudframeBorderThickness);
-
-			frameGroupBox.Content = frameStack;
-            parent.Children.Add(frameGroupBox);
+            AddSectionHeader(parent, Strings.TabFrame);
+            CreateDropdownField(parent, Strings.LblCustomColor, _validColors, out _cmbCustomColor);
+            CreateDropdownField(parent, Strings.LblCustomLaunchEffect, _validEffects, out _cmbCustomLaunchEffect);
+            CreateDropdownField(parent, Strings.LblFrameBorderColor, _validColors, out _cmbframeBorderColor);
+            CreateNumericField(parent, Strings.LblFrameBorderThickness, 0, 5, out _nudframeBorderThickness);
         }
 
-        private void CreateTitleSection(StackPanel parent)
+                private void CreateTitleSection(StackPanel parent)
         {
-            GroupBox titleGroupBox = new GroupBox
-            {
-                Header = Strings.TabTitle,
-                FontFamily = new FontFamily("Segoe UI Variable Display"),
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(_userAccentColor),
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(8)
-            };
-
-            StackPanel titleStack = new StackPanel { Orientation = Orientation.Vertical };
-
-            CreateDropdownField(titleStack, Strings.LblTitleTextColor, _validColors, out _cmbTitleTextColor);
-            CreateDropdownField(titleStack, Strings.LblTitleTextSize, _validTextSizes, out _cmbTitleTextSize);
-            CreateCheckboxField(titleStack, Strings.LblBoldTitleText, out _chkBoldTitleText);
-
-            titleGroupBox.Content = titleStack;
-            parent.Children.Add(titleGroupBox);
+            AddSectionHeader(parent, Strings.TabTitle);
+            CreateDropdownField(parent, Strings.LblTitleTextColor, _validColors, out _cmbTitleTextColor);
+            CreateDropdownField(parent, Strings.LblTitleTextSize, _validTextSizes, out _cmbTitleTextSize);
+            CreateCheckboxField(parent, Strings.LblBoldTitleText, out _chkBoldTitleText);
         }
 
-        private void CreateIconsSection(StackPanel parent)
+                private void CreateIconsSection(StackPanel parent)
         {
-            GroupBox iconsGroupBox = new GroupBox
-            {
-                Header = Strings.TabIcons,
-                FontFamily = new FontFamily("Segoe UI Variable Display"),
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                Foreground = new SolidColorBrush(_userAccentColor),
-                Margin = new Thickness(0, 0, 0, 10),
-                Padding = new Thickness(8)
-            };
-
-            StackPanel iconsStack = new StackPanel { Orientation = Orientation.Vertical };
-
-            // --- NEW: Portal View Dropdown (Visible strictly for Portal Frames) ---
-            CreateDropdownField(iconsStack, Strings.LblPortalView, new[] { "Icons", "Details" }, out _cmbPortalView);
+            AddSectionHeader(parent, Strings.TabIcons);
+            CreateDropdownField(parent, Strings.LblPortalView, new[] { "Icons", "Details" }, out _cmbPortalView);
             bool isPortal = _frame.ItemsType?.ToString() == "Portal";
-            if (_cmbPortalView.Parent is FrameworkElement pvRow)
-            {
-                pvRow.Visibility = isPortal ? Visibility.Visible : Visibility.Collapsed;
-            }
-            // ----------------------------------------------------------------------
-
-            CreateDropdownField(iconsStack, Strings.LblIconSize, _validIconSizes, out _cmbIconSize);
-            CreateNumericField(iconsStack, Strings.LblIconSpacing, 0, 20, out _nudIconSpacing);
-            CreateDropdownField(iconsStack, Strings.LblTextColor, _validColors, out _cmbTextColor);
-            CreateCheckboxField(iconsStack, Strings.LblDisableTextShadow, out _chkDisableTextShadow);
-            CreateCheckboxField(iconsStack, Strings.LblGrayscaleIcons, out _chkGrayscaleIcons);
-
-            iconsGroupBox.Content = iconsStack;
-            parent.Children.Add(iconsGroupBox);
+            if (_cmbPortalView.Parent is FrameworkElement pvRow) pvRow.Visibility = isPortal ? Visibility.Visible : Visibility.Collapsed;
+            CreateDropdownField(parent, Strings.LblIconSize, _validIconSizes, out _cmbIconSize);
+            CreateNumericField(parent, Strings.LblIconSpacing, 0, 20, out _nudIconSpacing);
+            CreateDropdownField(parent, Strings.LblTextColor, _validColors, out _cmbTextColor);
+            CreateCheckboxField(parent, Strings.LblDisableTextShadow, out _chkDisableTextShadow);
+            CreateCheckboxField(parent, Strings.LblGrayscaleIcons, out _chkGrayscaleIcons);
         }
 
-        #region Helper Methods for Control Creation
+        
+        private static void MakeRounded(Button btn, int radius = 6)
+        {
+            var t = new ControlTemplate(typeof(Button));
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("BorderBrush") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding("BorderThickness") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius));
+            var cp = new FrameworkElementFactory(typeof(ContentPresenter));
+            cp.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            cp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            border.AppendChild(cp);
+            t.VisualTree = border;
+            btn.Template = t;
+        }
+
+        private void AddSectionHeader(StackPanel parent, string title)
+        {
+            parent.Children.Add(new TextBlock
+            {
+                Text = title,
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
+                FontSize = 13,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(_userAccentColor),
+                Margin = new Thickness(0, 16, 0, 4)
+            });
+            parent.Children.Add(new Border
+            {
+                Background = new SolidColorBrush(Color.FromRgb(232, 232, 235)),
+                Height = 1,
+                Margin = new Thickness(0, 0, 0, 8)
+            });
+        }
+#region Helper Methods for Control Creation
         private void CreateDropdownField(StackPanel parent, string labelText, string[] items, out ComboBox comboBox)
         {
             Grid fieldGrid = new Grid

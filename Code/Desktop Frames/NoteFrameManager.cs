@@ -1,4 +1,4 @@
-﻿using Desktop_Frames.Localization;
+using Desktop_Frames.Localization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -749,8 +749,7 @@ namespace Desktop_Frames
         {
             try
             {
-                if (MessageBox.Show("Are you sure you want to clear all text from this note?",
-                    "Clear Note", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
+                if (MessageBoxesManager.ShowCustomYesNoMessageBox("Are you sure you want to clear all text from this note?", "Clear Note"))
                 {
                     noteTextBox.Text = "";
                     SaveNoteContent(frame, "");

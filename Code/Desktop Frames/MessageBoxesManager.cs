@@ -55,8 +55,7 @@ namespace Desktop_Frames
             }
             catch (Exception ex)
             {
-                LogManager.Log(LogManager.LogLevel.Error, LogManager.LogCategory.UI, $"Error showing CustomMessageBox form: {ex.Message}");
-                return false;
+                LogManager.Log(LogManager.LogLevel.Error, LogManager.LogCategory.UI, $"Error showing CustomMessageBox form: {ex.Message}"); return false;
             }
         }
         #endregion
@@ -777,7 +776,7 @@ namespace Desktop_Frames
             {
                 LogManager.Log(LogManager.LogLevel.Error, LogManager.LogCategory.UI, $"Error showing auto-closing MessageBox: {ex.Message}");
                 // Fallback to regular message box
-                System.Windows.MessageBox.Show(message, title, MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBoxesManager.ShowOKOnlyMessageBoxForm(message, title);
             }
         }
         #endregion
@@ -1707,7 +1706,7 @@ namespace Desktop_Frames
             {
                 LogManager.Log(LogManager.LogLevel.Error, LogManager.LogCategory.UI, $"Error showing OK-only MessageBox: {ex.Message}");
                 // Fallback to system message box
-                System.Windows.MessageBox.Show($"An error occurred: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                // error already logged above
             }
         }
         #endregion

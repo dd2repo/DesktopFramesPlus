@@ -1,4 +1,4 @@
-﻿using DesktopFrames;
+using DesktopFrames;
 using Microsoft.Win32;
 using Newtonsoft.Json.Linq;
 using System;
@@ -36,7 +36,7 @@ namespace Desktop_Frames
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Profile Initialization Error: {ex.Message}", "Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBoxesManager.ShowOKOnlyMessageBoxForm($"Profile Initialization Error: {ex.Message}", "Startup Error");
                 Shutdown();
                 return;
             }
@@ -186,7 +186,7 @@ namespace Desktop_Frames
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Critical Startup Error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBoxesManager.ShowOKOnlyMessageBoxForm($"Critical Startup Error: {ex.Message}", "Error");
                 Shutdown();
             }
         }

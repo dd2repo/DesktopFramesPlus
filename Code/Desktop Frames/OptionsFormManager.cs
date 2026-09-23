@@ -173,14 +173,14 @@ namespace Desktop_Frames
                 Content = title,
                 Height = 40,
                 FontFamily = new FontFamily("Segoe UI Variable Display"),
-                FontSize = 14,
-                FontWeight = FontWeights.Bold,
-                BorderThickness = new Thickness(0),
+                FontSize = 13,
+                FontWeight = FontWeights.Normal,
                 Cursor = Cursors.Hand,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
-                Padding = new Thickness(20, 0, 0, 0),
-                Margin = new Thickness(0, 0, 0, 2)
+                Padding = new Thickness(16, 0, 0, 0),
+                Margin = new Thickness(0, 1, 0, 1)
             };
+            MakeRoundedBtn(tabButton, 4);
             SetTabButtonColors(tabButton, tabIndex, isSelected);
             tabButton.Click += (s, e) => SelectTab(tabIndex, tabButton);
             tabButton.MouseEnter += (s, e) => { if (_tabControl.SelectedIndex != tabIndex) SetTabButtonColors(tabButton, tabIndex, false, true); };
@@ -999,7 +999,22 @@ namespace Desktop_Frames
             p.Children.Add(g);
         }
 
-        private static Button CreateStyledButton(string t, Color c) => new Button { Content = t, FontFamily = new FontFamily("Segoe UI"), FontSize = 13, FontWeight = FontWeights.Bold, Background = new SolidColorBrush(c), Foreground = Brushes.White, BorderThickness = new Thickness(0), Cursor = Cursors.Hand, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch };
+        private static Button CreateStyledButton(string t, Color c) { var btn = new Button { Content = t, FontFamily = new FontFamily("Segoe UI Variable Display"), FontSize = 13, FontWeight = FontWeights.SemiBold, Background = new SolidColorBrush(c), Foreground = Brushes.White, BorderThickness = new Thickness(0), Cursor = Cursors.Hand, Height = 36, HorizontalAlignment = HorizontalAlignment.Stretch, VerticalAlignment = VerticalAlignment.Stretch }; MakeRoundedBtn(btn); Color hover = Color.FromRgb((byte)Math.Max(0, c.R - 20), (byte)Math.Max(0, c.G - 20), (byte)Math.Max(0, c.B - 20)); btn.MouseEnter += (s, e) => btn.Background = new SolidColorBrush(hover); btn.MouseLeave += (s, e) => btn.Background = new SolidColorBrush(c); return btn; }
+        private static void MakeRoundedBtn(Button btn, int radius = 6)
+        {
+            var t = new ControlTemplate(typeof(Button));
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("BorderBrush") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding("BorderThickness") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius));
+            var cp = new FrameworkElementFactory(typeof(ContentPresenter));
+            cp.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            cp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            border.AppendChild(cp);
+            t.VisualTree = border;
+            btn.Template = t;
+        }
 
         private static void CreateLogLevelComboBox(StackPanel p)
         {
