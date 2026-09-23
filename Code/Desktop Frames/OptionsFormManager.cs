@@ -168,6 +168,7 @@ namespace Desktop_Frames
 
         private static void CreateTabButton(StackPanel parent, string title, int tabIndex, bool isSelected)
         {
+            // Use default WPF template — custom ControlTemplate can interfere with click routing
             Button tabButton = new Button
             {
                 Content = title,
@@ -175,12 +176,13 @@ namespace Desktop_Frames
                 FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 13,
                 FontWeight = FontWeights.Normal,
+                BorderThickness = new Thickness(3, 0, 0, 0),
                 Cursor = Cursors.Hand,
                 HorizontalContentAlignment = HorizontalAlignment.Left,
                 Padding = new Thickness(16, 0, 0, 0),
-                Margin = new Thickness(0, 1, 0, 1)
+                Margin = new Thickness(0, 1, 0, 1),
+                FocusVisualStyle = null
             };
-            MakeRoundedBtn(tabButton, 4);
             SetTabButtonColors(tabButton, tabIndex, isSelected);
             tabButton.Click += (s, e) => SelectTab(tabIndex, tabButton);
             tabButton.MouseEnter += (s, e) => { if (_tabControl.SelectedIndex != tabIndex) SetTabButtonColors(tabButton, tabIndex, false, true); };
