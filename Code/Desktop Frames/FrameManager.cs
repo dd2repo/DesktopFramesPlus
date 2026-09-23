@@ -3921,10 +3921,7 @@ namespace Desktop_Frames
             };
 
 
-            dp.Children.Add(heart);
-            Panel.SetZIndex(heart, 100); // Ensure heart is above titleGrid to receive clicks
-
-            // Store heart TextBlock reference for this frame
+            // heart goes into titleGrid Col 0 — NOT the DockPanel — so the title bar background is unbroken
             _heartTextBlocks[frame] = heart;
             // Create and assign heart ContextMenu using centralized builder
       
@@ -3967,10 +3964,13 @@ namespace Desktop_Frames
 
             // Create a Grid for the titlebar - move here to ensure it is created before mouse handler
             Grid titleGrid = new Grid
-            { Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(25, 0, 0, 0)) };
-            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Pixel) }); // Col 0: Spacer
-            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Col 1: Title
-            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                      // Col 2: Filter Icon (Auto width)
+            {
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(25, 0, 0, 0)),
+                Height = 24
+            };
+            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                      // Col 0: Menu icon
+            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Col 1: Title / drag area
+            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                      // Col 2: Frame name
                                                                                                                       // End of ctrl+click handler
             ContextMenu CnMnFramemanager = new ContextMenu();
 
@@ -4829,6 +4829,12 @@ namespace Desktop_Frames
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Cursor = Cursors.SizeAll,
             };
+            // Menu icon in Col 0 — inside titleGrid so bar background is seamless
+            heart.VerticalAlignment = VerticalAlignment.Center;
+            heart.Margin = new Thickness(6, 0, 4, 0);
+            Grid.SetColumn(heart, 0);
+            titleGrid.Children.Add(heart);
+
             Grid.SetColumn(titlelabel, 1);
             titleGrid.Children.Add(titlelabel);
 
