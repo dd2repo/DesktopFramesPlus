@@ -691,7 +691,7 @@ namespace Desktop_Frames
                 bool titleFound = false;
                 for (int i = 0; i < dockPanel.Children.Count; i++)
                 {
-                    if (dockPanel.Children[i] is Grid g && g.Children.OfType<TextBlock>().Any(tb => tb.Name == "FrameLockIcon"))
+                    if (dockPanel.Children[i] is Grid g && g.Children.OfType<TextBlock>().Any(tb => tb.Name == "FrameMenuIcon"))
                     {
                         insertIndex = i + 1;
                         titleFound = true;
@@ -1216,6 +1216,11 @@ namespace Desktop_Frames
             var optionsItem = new MenuItem { Header = Strings.MenuOptions };
             optionsItem.Click += (s, e) => OptionsFormManager.ShowOptionsForm();
             menu.Items.Add(optionsItem);
+
+            // Global lock toggle
+            var lockItem = new MenuItem { Header = "Frames sperren", IsCheckable = true, IsChecked = SettingsManager.GlobalFramesLocked };
+            lockItem.Click += (s, e) => SetGlobalFrameLock(lockItem.IsChecked);
+            menu.Items.Add(lockItem);
 
             // Separator
             menu.Items.Add(new Separator());
@@ -3715,6 +3720,30 @@ namespace Desktop_Frames
         }
 
 
+        // Compute a semi-transparent colored brush that blends the frame's accent color
+        // with transparency so the wallpaper shows through but readability stays decent.
+        private static System.Windows.Media.SolidColorBrush BuildFrameBackground(dynamic frame)
+        {
+            byte alpha = (byte)(SettingsManager.GlobalFrameAlpha * 255 / 100);
+            try
+            {
+                string colorName = frame.CustomColor?.ToString();
+                if (string.IsNullOrEmpty(colorName)) colorName = SettingsManager.SelectedColor;
+                var c = Utility.GetColorFromName(colorName);
+                // Darken the tint so it doesn't overpower the wallpaper
+                byte r = (byte)(c.R * 0.35);
+                byte g = (byte)(c.G * 0.35);
+                byte b = (byte)(c.B * 0.35);
+                return new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromArgb(alpha, r, g, b));
+            }
+            catch
+            {
+                return new System.Windows.Media.SolidColorBrush(
+                    System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
+            }
+        }
+
         // Wraps the frame border in an outer DockPanel so the tab strip can live
         // above the semi-transparent frame background rather than inside it.
         private static DockPanel BuildOuterContent(Border cborder)
@@ -3793,7 +3822,7 @@ namespace Desktop_Frames
             }
             Border cborder = new Border
             {
-                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb((byte)(SettingsManager.GlobalFrameAlpha * 255 / 100), 0, 0, 0)),
+                Background = BuildFrameBackground(frame),
                 // --- APPLY HIDDEN SETTING: Sharp corners if enabled, otherwise default 6px round ---
                 CornerRadius = SettingsManager.FramesWithNoRoundCorners ? new CornerRadius(0) : new CornerRadius(6),
                 BorderBrush = borderBrush, // Apply border color
@@ -3917,120 +3946,6 @@ namespace Desktop_Frames
                     e.Handled = true;
                 }
             };
-            // Add a protection symbol in top-right corner
-
-
-            string LockSymbol = "";
-
-            if (SettingsManager.LockIcon == 0)
-            {
-                LockSymbol = "";
-            }
-            else if (SettingsManager.LockIcon == 1)
-            {
-                LockSymbol = "";
-            }
-            else if (SettingsManager.LockIcon == 2)
-            {
-                LockSymbol = "";
-            }
-            else if (SettingsManager.LockIcon == 3)
-            {
-                LockSymbol = "";
-            }
-
-            //MessageBox.Show(SettingsManager.LockIcon +" " + LockSymbol.ToString());
-
-
-            TextBlock lockIcon = new TextBlock
-            {
-                Name = "FrameLockIcon",
-                Text = LockSymbol,
-                FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets"),
-                FontSize = 16,
-                Foreground = frame.IsLocked?.ToString().ToLower() == "true" ? System.Windows.Media.Brushes.Red : System.Windows.Media.Brushes.White,
-                Margin = new Thickness(0, 3, 2, 0), // Adjusted for top-right positioning
-                HorizontalAlignment = HorizontalAlignment.Right,
-                VerticalAlignment = VerticalAlignment.Top,
-                Cursor = Cursors.Hand,
-                ToolTip = frame.IsLocked?.ToString().ToLower() == "true" ? "Frame is locked (click to unlock)" : "Frame is unlocked (click to lock)",
-                Opacity = (double)SettingsManager.MenuTintValue / 100 // 0.3 // Lower tint by default
-            };
-
-  
-            lockIcon.MouseEnter += (s, e) =>
-            {
-                // Remove previous animation
-                lockIcon.BeginAnimation(UIElement.OpacityProperty, null);
-
-                lockIcon.Opacity = 1.0;
-            };
-
-            lockIcon.MouseLeave += (s, e) =>
-            {
-                double targetOpacity = (double)SettingsManager.MenuTintValue / 100;
-
-                DoubleAnimation fadeBack = new DoubleAnimation
-                {
-                    From = 1.0,
-                    To = targetOpacity,
-                    Duration = TimeSpan.FromMilliseconds(300),
-                    BeginTime = TimeSpan.FromMilliseconds(800)
-                };
-
-                lockIcon.BeginAnimation(UIElement.OpacityProperty, fadeBack);
-            };
-
-
-
-
-            // Set initial state without saving to JSON
-            UpdateLockState(lockIcon, frame, null, saveToJson: false);
-            // Lock icon click handler
-            lockIcon.MouseLeftButtonDown += (s, e) =>
-            {
-                if (e.ChangedButton == MouseButton.Left)
-                {
-
-                    // FIX: Directly call CommitRename logic
-                    if (titletb.IsVisible)
-                    {
-                        CommitRename?.Invoke();
-                        return;
-                    }
-
-                    // Get the NonActivatingWindow to find the frame by Id
-                    NonActivatingWindow win = FindVisualParent<NonActivatingWindow>(lockIcon);
-                    if (win == null)
-                    {
-                        LogManager.Log(LogManager.LogLevel.Warn, LogManager.LogCategory.Error, $"Could not find NonActivatingWindow for lock icon click in frame '{frame.Title}'");
-                        return;
-                    }
-                    // Find the frame in FrameDataManager.FrameData using the window's Tag (Id)
-                    string frameId = win.Tag?.ToString();
-                    if (string.IsNullOrEmpty(frameId))
-                    {
-                        LogManager.Log(LogManager.LogLevel.Warn, LogManager.LogCategory.Error, $"Frame Id is missing for window '{win.Title}'");
-                        return;
-                    }
-                    dynamic currentFrame = FrameDataManager.FrameData.FirstOrDefault(f => f.Id?.ToString() == frameId);
-                    if (currentFrame == null)
-                    {
-                        LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.FrameUpdate, $"Frame with Id '{frameId}' not found in FrameDataManager.FrameData");
-                        return;
-                    }
-                    // Toggle the lock state
-                    bool currentState = currentFrame.IsLocked?.ToString().ToLower() == "true";
-                    bool newState = !currentState;
-                    // Update UI and JSON on the main thread
-                    System.Windows.Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        UpdateLockState(lockIcon, currentFrame, newState, saveToJson: true);
-                    });
-                }
-            };
-
-
 
             // Create a Grid for the titlebar - move here to ensure it is created before mouse handler
             Grid titleGrid = new Grid
@@ -4040,7 +3955,6 @@ namespace Desktop_Frames
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Pixel) }); // Col 0: Spacer
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Col 1: Title
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                      // Col 2: Filter Icon (Auto width)
-            titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(30, GridUnitType.Pixel) }); // Col 3: Lock Icon
                                                                                                                       // End of ctrl+click handler
             ContextMenu CnMnFramemanager = new ContextMenu();
 
@@ -4104,7 +4018,7 @@ namespace Desktop_Frames
                 ShowInTaskbar = false,
                 WindowStyle = WindowStyle.None,
                 Content = BuildOuterContent(cborder),
-                ResizeMode = frame.IsLocked?.ToString().ToLower() == "true" ? ResizeMode.NoResize : ResizeMode.CanResizeWithGrip,
+                ResizeMode = SettingsManager.GlobalFramesLocked ? ResizeMode.NoResize : ResizeMode.CanResizeWithGrip,
                 Topmost = frame.AlwaysOnTop?.ToString().ToLower() == "true", // --- NEW: Apply Always On Top ---
                 // ResizeMode = ResizeMode.CanResizeWithGrip,
                 Width = (double)frame.Width,
@@ -4378,8 +4292,6 @@ namespace Desktop_Frames
             {
                 // Adjust position after window is shown so PresentationSource (per-monitor DPI) is available
                 AdjustFramePositionToScreen(win);
-                UpdateLockState(lockIcon, frame, null, saveToJson: false);
-                LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.FrameCreation, $"Applied lock state for frame '{frame.Title}' on load: IsLocked={frame.IsLocked?.ToString().ToLower()}");
                 // Apply IsRolled state
                 bool isRolled = frame.IsRolled?.ToString().ToLower() == "true";
                 double targetHeight = 28; // Default for rolled-up state  //rolled height
@@ -4893,19 +4805,33 @@ namespace Desktop_Frames
             }
             catch { titleFontSize = 12; }
 
+            // Invisible drag handle spans the whole title row
             Label titlelabel = new Label
             {
-                Content = frame.Title.ToString(),
-                Foreground = titleTextBrush,
-                HorizontalContentAlignment = HorizontalAlignment.Center,
+                Content = "",
+                Background = System.Windows.Media.Brushes.Transparent,
                 HorizontalAlignment = HorizontalAlignment.Stretch,
                 Cursor = Cursors.SizeAll,
-                FontFamily = new System.Windows.Media.FontFamily(SettingsManager.GlobalFontFamily),
-                FontWeight = isBoldTitle ? FontWeights.Bold : FontWeights.SemiBold,
-                FontSize = titleFontSize
             };
             Grid.SetColumn(titlelabel, 1);
             titleGrid.Children.Add(titlelabel);
+
+            // Frame name — small, right-aligned, modern
+            var titleNameLabel = new TextBlock
+            {
+                Name = "FrameNameLabel",
+                Text = frame.Title?.ToString() ?? "",
+                Foreground = new SolidColorBrush(System.Windows.Media.Color.FromArgb(210, 255, 255, 255)),
+                FontFamily = new System.Windows.Media.FontFamily(SettingsManager.GlobalFontFamily),
+                FontSize = 10,
+                FontWeight = FontWeights.Normal,
+                HorizontalAlignment = HorizontalAlignment.Right,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(0, 0, 8, 0),
+                IsHitTestVisible = false // clicks pass through to the drag handle
+            };
+            Grid.SetColumn(titleNameLabel, 2);
+            titleGrid.Children.Add(titleNameLabel);
 
             // --- DYNAMIC STATE UPDATES (ON MENU OPEN) ---
             MenuItem miExportAllToDesktop = null;
@@ -5533,12 +5459,6 @@ namespace Desktop_Frames
             //    LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.UI, $"Rename saved via LostFocus: {finalTitle}");
             //};
             //// --- STEP 4 END ---
-
-
-            // Move lockIcon to the Grid
-            Grid.SetColumn(lockIcon, 3); // Moved to Column 3
-            Grid.SetRow(lockIcon, 0);
-            titleGrid.Children.Add(lockIcon);
             // Add the titleGrid to the DockPanel
             DockPanel.SetDock(titleGrid, Dock.Top);
             dp.Children.Add(titleGrid);
@@ -7714,59 +7634,16 @@ namespace Desktop_Frames
                 return false;
             }
         }
-
-
-
-        private static void UpdateLockState(TextBlock lockIcon, dynamic frame, bool? forceState = null, bool saveToJson = true)
+        // Global lock toggle: lock or unlock all open frames at once
+        public static void SetGlobalFrameLock(bool locked)
         {
-            // Get the actual frame from FrameDataManager.FrameData using Id to ensure correct reference
-            string frameId = frame.Id?.ToString();
-            if (string.IsNullOrEmpty(frameId))
-            {
-                LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.FrameUpdate, $"Frame '{frame.Title}' has no Id, cannot update lock state");
-                return;
-            }
-
-            int index = FrameDataManager.FrameData.FindIndex(f => f.Id?.ToString() == frameId);
-            if (index < 0)
-            {
-                LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.FrameUpdate, $"Frame '{frame.Title}' not found in FrameDataManager.FrameData, cannot update lock state");
-                return;
-            }
-
-            dynamic actualFrame = FrameDataManager.FrameData[index];
-            bool isLocked = forceState ?? (actualFrame.IsLocked?.ToString().ToLower() == "true");
-
-            // Only update JSON if explicitly requested (e.g., during toggle, not initialization)
-            if (saveToJson)
-            {
-                UpdateFrameProperty(actualFrame, "IsLocked", isLocked.ToString().ToLower(), $"Frame {(isLocked ? "locked" : "unlocked")}");
-            }
-
-            // Update UI on the main thread
+            SettingsManager.GlobalFramesLocked = locked;
+            SettingsManager.SaveSettings();
             System.Windows.Application.Current.Dispatcher.Invoke(() =>
-
-
             {
-                // Update lock icon: swap glyph (closed/open padlock), always white
-                lockIcon.Text = isLocked ? "" : "";
-                lockIcon.Foreground = System.Windows.Media.Brushes.White;
-                lockIcon.ToolTip = isLocked ? "Frame is locked (click to unlock)" : "Frame is unlocked (click to lock)";
-
-                // Find the NonActivatingWindow
-                NonActivatingWindow win = FindVisualParent<NonActivatingWindow>(lockIcon);
-                if (win == null)
-                {
-                    LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.UI, $"Could not find NonActivatingWindow for frame '{actualFrame.Title}'");
-                    return;
-                }
-
-                // Update ResizeMode
-                win.ResizeMode = isLocked ? ResizeMode.NoResize : ResizeMode.CanResizeWithGrip;
-                LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.FrameUpdate, $"Set ResizeMode to {win.ResizeMode} for frame '{actualFrame.Title}'");
+                foreach (var win in System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>())
+                    win.ResizeMode = locked ? ResizeMode.NoResize : ResizeMode.CanResizeWithGrip;
             });
-
-            LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.UI, $"Updated lock state for frame '{actualFrame.Title}': IsLocked={isLocked}");
         }
 
 

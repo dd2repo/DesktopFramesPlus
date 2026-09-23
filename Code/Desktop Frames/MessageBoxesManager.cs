@@ -1,4 +1,4 @@
-﻿using Desktop_Frames.Localization;
+using Desktop_Frames.Localization;
 using System;
 using System.IO;
 using System.Media;
@@ -110,7 +110,7 @@ namespace Desktop_Frames
             // --- FIX: Add Text Measurement for Dynamic Sizing ---
             private Size MeasureText(string text, int maxTextWidth, int fontSize, FontWeight weight)
             {
-                var typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, weight, FontStretches.Normal);
+                var typeface = new Typeface(new FontFamily("Segoe UI Variable Display"), FontStyles.Normal, weight, FontStretches.Normal);
                 var formattedText = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, fontSize, Brushes.Black, 96);
                 if (maxTextWidth > 0) formattedText.MaxTextWidth = maxTextWidth;
                 return new Size(formattedText.Width, formattedText.Height);
@@ -127,7 +127,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -174,8 +174,7 @@ namespace Desktop_Frames
                         Color = Colors.Black,
                         Direction = 270,
                         ShadowDepth = 2,
-                        BlurRadius = 10,
-                        Opacity = 0.1
+                        BlurRadius = 12, Opacity = 0.12
                     }
                 };
 
@@ -187,7 +186,7 @@ namespace Desktop_Frames
                 Border accentHeader = new Border
                 {
                     Background = new SolidColorBrush(_userAccentColor),
-                    Height = 8
+                    Height = 3
                 };
                 Grid.SetRow(accentHeader, 0);
 
@@ -213,7 +212,7 @@ namespace Desktop_Frames
                 TextBlock warningIcon = new TextBlock
                 {
                     Text = "⚠",
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 32,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(_userAccentColor),
@@ -228,7 +227,7 @@ namespace Desktop_Frames
                 TextBlock titleLabel = new TextBlock
                 {
                     Text = _title,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(Color.FromRgb(32, 33, 36)),
@@ -237,7 +236,7 @@ namespace Desktop_Frames
                 TextBlock messageLabel = new TextBlock
                 {
                     Text = _message,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
                     TextWrapping = TextWrapping.Wrap,
@@ -261,12 +260,13 @@ namespace Desktop_Frames
                     Content = Strings.ButtonNo,
                     Width = 80,
                     Height = 32,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(_userAccentColor),
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
+                    Padding = new Thickness(16, 0, 16, 0),
                     Cursor = Cursors.Hand,
                     Margin = new Thickness(0, 0, 4, 0)
                 };
@@ -280,12 +280,13 @@ namespace Desktop_Frames
                     Content = Strings.ButtonYes,
                     Width = 80,
                     Height = 32,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(Color.FromRgb(234, 67, 53)),
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
+                    Padding = new Thickness(16, 0, 16, 0),
                     Cursor = Cursors.Hand
                 };
                 btnYes.MouseEnter += (s, e) => btnYes.Background = new SolidColorBrush(Color.FromRgb(219, 50, 36));
@@ -334,7 +335,7 @@ namespace Desktop_Frames
             {
                 Text = message,
                 Foreground = Brushes.White,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 14,
                 FontWeight = FontWeights.SemiBold,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -346,7 +347,7 @@ namespace Desktop_Frames
             {
                 Text = "Desktop Frames +",
                 Foreground = new SolidColorBrush((Color)ColorConverter.ConvertFromString("#99FFFFFF")), // Dimmed White
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 9,
                 FontWeight = FontWeights.Normal,
                 HorizontalAlignment = HorizontalAlignment.Center,
@@ -398,7 +399,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -424,7 +425,7 @@ namespace Desktop_Frames
 
             private Size MeasureText(string text)
             {
-                var typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+                var typeface = new Typeface(new FontFamily("Segoe UI Variable Display"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
                 var formattedText = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, 14, Brushes.Black, 96);
                 formattedText.MaxTextWidth = 380;
                 return new Size(formattedText.Width, formattedText.Height);
@@ -444,8 +445,7 @@ namespace Desktop_Frames
                         Color = Colors.Black,
                         Direction = 270,
                         ShadowDepth = 2,
-                        BlurRadius = 10,
-                        Opacity = 0.1
+                        BlurRadius = 12, Opacity = 0.12
                     }
                 };
 
@@ -470,7 +470,7 @@ namespace Desktop_Frames
                 TextBlock titleLabel = new TextBlock
                 {
                     Text = _title,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 16,
                     FontWeight = FontWeights.Bold,
                     Foreground = Brushes.White,
@@ -483,7 +483,7 @@ namespace Desktop_Frames
                 _autoCloseLabel = new TextBlock
                 {
                     Text = $"Auto-closing in {_remainingSeconds}s",
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 12,
                     Foreground = new SolidColorBrush(Color.FromArgb(220, 255, 255, 255)),
                     VerticalAlignment = VerticalAlignment.Center,
@@ -498,7 +498,7 @@ namespace Desktop_Frames
                     Content = "✕",
                     Width = 24,
                     Height = 20,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 10,
                     FontWeight = FontWeights.Bold,
                     Foreground = Brushes.White,
@@ -529,7 +529,7 @@ namespace Desktop_Frames
                 TextBlock messageLabel = new TextBlock
                 {
                     Text = _message,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     Foreground = new SolidColorBrush(Color.FromRgb(60, 64, 67)),
                     TextWrapping = TextWrapping.Wrap,
@@ -633,7 +633,7 @@ namespace Desktop_Frames
                 this.Height = 180;
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
                 this.AllowsTransparency = true;
                 this.Topmost = true;
                 this.ResizeMode = ResizeMode.NoResize;
@@ -670,7 +670,7 @@ namespace Desktop_Frames
                 TextBlock titleText = new TextBlock
                 {
                     Text = title,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 16,
                     FontWeight = FontWeights.Medium,
                     Foreground = new SolidColorBrush(Color.FromRgb(66, 133, 244)),
@@ -725,7 +725,7 @@ namespace Desktop_Frames
                 TextBlock waitText = new TextBlock
                 {
                     Text = message,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 12,
                     Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
                     HorizontalAlignment = HorizontalAlignment.Center
@@ -823,7 +823,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -850,7 +850,7 @@ namespace Desktop_Frames
 
             private Size MeasureText(string text)
             {
-                var typeface = new Typeface(new FontFamily("Segoe UI"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
+                var typeface = new Typeface(new FontFamily("Segoe UI Variable Display"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
                 var formattedText = new FormattedText(text, System.Globalization.CultureInfo.CurrentCulture, FlowDirection.LeftToRight, typeface, 14, Brushes.Black, 96);
                 formattedText.MaxTextWidth = 380;
                 return new Size(formattedText.Width, formattedText.Height);
@@ -868,8 +868,7 @@ namespace Desktop_Frames
                         Color = Colors.Black,
                         Direction = 270,
                         ShadowDepth = 2,
-                        BlurRadius = 10,
-                        Opacity = 0.1
+                        BlurRadius = 12, Opacity = 0.12
                     }
                 };
 
@@ -911,7 +910,7 @@ namespace Desktop_Frames
                 TextBlock infoIcon = new TextBlock
                 {
                     Text = "ℹ",
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 42,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(_userAccentColor),
@@ -932,7 +931,7 @@ namespace Desktop_Frames
                 TextBlock titleLabel = new TextBlock
                 {
                     Text = _title,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(Color.FromRgb(32, 33, 36)),
@@ -942,7 +941,7 @@ namespace Desktop_Frames
                 TextBlock messageLabel = new TextBlock
                 {
                     Text = _message,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
                     TextWrapping = TextWrapping.Wrap,
@@ -969,7 +968,7 @@ namespace Desktop_Frames
                     Content = Strings.ButtonOk,
                     Width = 90,
                     Height = 36,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(_userAccentColor),
@@ -1062,7 +1061,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -1093,8 +1092,7 @@ namespace Desktop_Frames
                         Color = Colors.Black,
                         Direction = 270,
                         ShadowDepth = 2,
-                        BlurRadius = 10,
-                        Opacity = 0.1
+                        BlurRadius = 12, Opacity = 0.12
                     }
                 };
 
@@ -1106,7 +1104,7 @@ namespace Desktop_Frames
                 Border accentHeader = new Border
                 {
                     Background = new SolidColorBrush(_userAccentColor),
-                    Height = 8
+                    Height = 3
                 };
                 Grid.SetRow(accentHeader, 0);
 
@@ -1132,7 +1130,7 @@ namespace Desktop_Frames
                 TextBlock warningIcon = new TextBlock
                 {
                     Text = "🗂",
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 42,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(_userAccentColor),
@@ -1153,7 +1151,7 @@ namespace Desktop_Frames
                 TextBlock titleLabel = new TextBlock
                 {
                     Text = Strings.DeleteTabTitle,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(Color.FromRgb(32, 33, 36)),
@@ -1164,7 +1162,7 @@ namespace Desktop_Frames
                 TextBlock messageLabel = new TextBlock
                 {
                     Text = $"Are you sure you want to delete tab\n '{_tabName}'?\nThis tab contains {_itemCount} {itemText} that will be permanently removed.",
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
                     TextWrapping = TextWrapping.Wrap,
@@ -1191,12 +1189,13 @@ namespace Desktop_Frames
                     Content = Strings.ButtonNo,
                     Width = 80,
                     Height = 32,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(_userAccentColor),
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
+                    Padding = new Thickness(16, 0, 16, 0),
                     Cursor = Cursors.Hand,
                     Margin = new Thickness(0, 0, 4, 0)
                 };
@@ -1217,12 +1216,13 @@ namespace Desktop_Frames
                     Content = Strings.ButtonYes,
                     Width = 80,
                     Height = 32,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(Color.FromRgb(234, 67, 53)),
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
+                    Padding = new Thickness(16, 0, 16, 0),
                     Cursor = Cursors.Hand
                 };
 
@@ -1443,7 +1443,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -1474,8 +1474,7 @@ namespace Desktop_Frames
                         Color = Colors.Black,
                         Direction = 270,
                         ShadowDepth = 2,
-                        BlurRadius = 10,
-                        Opacity = 0.1
+                        BlurRadius = 12, Opacity = 0.12
                     }
                 };
 
@@ -1488,7 +1487,7 @@ namespace Desktop_Frames
                 Border accentHeader = new Border
                 {
                     Background = new SolidColorBrush(_userAccentColor),
-                    Height = 8
+                    Height = 3
                 };
                 Grid.SetRow(accentHeader, 0);
 
@@ -1518,7 +1517,7 @@ namespace Desktop_Frames
                 TextBlock warningIcon = new TextBlock
                 {
                     Text = "⚠",
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 32,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(_userAccentColor),
@@ -1539,7 +1538,7 @@ namespace Desktop_Frames
                 TextBlock titleLabel = new TextBlock
                 {
                     Text = Strings.DeleteFrameHeading,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 18,
                     FontWeight = FontWeights.Bold,
                     Foreground = new SolidColorBrush(Color.FromRgb(32, 33, 36)),
@@ -1549,7 +1548,7 @@ namespace Desktop_Frames
                 TextBlock messageLabel = new TextBlock
                 {
                     Text = Strings.DeleteFrameQuestion,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
                     TextWrapping = TextWrapping.Wrap,
@@ -1576,12 +1575,13 @@ namespace Desktop_Frames
                     Content = Strings.ButtonNo,
                     Width = 80,
                     Height = 32,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(_userAccentColor),
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
+                    Padding = new Thickness(16, 0, 16, 0),
                     Cursor = Cursors.Hand,
                     Margin = new Thickness(0, 0, 4, 0)
                 };
@@ -1603,12 +1603,13 @@ namespace Desktop_Frames
                     Content = Strings.ButtonYes,
                     Width = 80,
                     Height = 32,
-                    FontFamily = new FontFamily("Segoe UI"),
+                    FontFamily = new FontFamily("Segoe UI Variable Display"),
                     FontSize = 14,
                     FontWeight = FontWeights.Bold,
                     Background = new SolidColorBrush(Color.FromRgb(234, 67, 53)), // Material Red
                     Foreground = Brushes.White,
                     BorderThickness = new Thickness(0),
+                    Padding = new Thickness(16, 0, 16, 0),
                     Cursor = Cursors.Hand
                 };
 

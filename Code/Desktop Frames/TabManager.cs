@@ -1,4 +1,4 @@
-﻿using Desktop_Frames.Localization;
+using Desktop_Frames.Localization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -333,7 +333,7 @@ namespace Desktop_Frames
                     for (int i = 0; i < dockPanel.Children.Count; i++)
                     {
                         if (dockPanel.Children[i] is Grid g &&
-                            g.Children.OfType<TextBlock>().Any(tb => tb.Name == "FrameLockIcon"))
+                            g.Children.OfType<TextBlock>().Any(tb => tb.Name == "FrameMenuIcon"))
                         {
                             insertIndex = i + 1;
                             titleFound = true;

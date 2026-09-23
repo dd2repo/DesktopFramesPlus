@@ -85,6 +85,7 @@ namespace Desktop_Frames
         // --- Global Frame Style ---
         public static bool UseGlobalFrameStyle { get; set; } = false;
         public static int GlobalFrameAlpha { get; set; } = 40; // 0=fully transparent, 100=fully opaque
+        public static bool GlobalFramesLocked { get; set; } = false;
         public static int DefaultItemFontSize { get; set; } = 12;
 
         // --- NEW: Hidden Plugin Tier System ---
@@ -265,6 +266,7 @@ namespace Desktop_Frames
                 DefaultItemFontSize,
                 UseGlobalFrameStyle,
                 GlobalFrameAlpha,
+                GlobalFramesLocked,
                 PluginAvailabilityLevel,
 
                 // Auto-Hide
@@ -363,6 +365,7 @@ namespace Desktop_Frames
             try { GlobalFontFamily = data.GlobalFontFamily?.ToString() ?? "Segoe UI Variable Display"; } catch { GlobalFontFamily = "Segoe UI Variable Display"; }
             try { UseGlobalFrameStyle = data.UseGlobalFrameStyle ?? false; } catch { UseGlobalFrameStyle = false; }
             try { GlobalFrameAlpha = data.GlobalFrameAlpha ?? 40; } catch { GlobalFrameAlpha = 40; }
+            try { GlobalFramesLocked = data.GlobalFramesLocked ?? false; } catch { GlobalFramesLocked = false; }
             try { DefaultItemFontSize = data.DefaultItemFontSize ?? 12; } catch { DefaultItemFontSize = 12; }
             try { PluginAvailabilityLevel = data.PluginAvailabilityLevel ?? 1; } catch { PluginAvailabilityLevel = 1; }
 

@@ -351,21 +351,29 @@ namespace Desktop_Frames
                         menuIcon.Opacity = iconOpacity;
                     }
 
-                    var lockIcon = FindChild<TextBlock>(win, "FrameLockIcon");
-                    if (lockIcon != null)
-                    {
-                        // Glyph and color are managed by UpdateLockState; only refresh opacity here
-                        lockIcon.BeginAnimation(UIElement.OpacityProperty, null);
-                        lockIcon.Opacity = iconOpacity;
-                    }
-
-                    // Update frame background transparency
-                    var frameBorder = win.Content as System.Windows.Controls.Border;
+                    // Update frame background: adaptive colored tint + transparency
+                    var outerDock = win.Content as DockPanel;
+                    var frameBorder = (outerDock?.Tag?.ToString() == "OUTER_FRAME_DOCK")
+                        ? outerDock.Children.OfType<System.Windows.Controls.Border>().FirstOrDefault()
+                        : win.Content as System.Windows.Controls.Border;
                     if (frameBorder != null)
                     {
                         byte alpha = (byte)(SettingsManager.GlobalFrameAlpha * 255 / 100);
-                        frameBorder.Background = new System.Windows.Media.SolidColorBrush(
-                            System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
+                        string colorName = colorToApply ?? SettingsManager.SelectedColor;
+                        try
+                        {
+                            var c = GetColorFromName(colorName);
+                            byte r = (byte)(c.R * 0.35);
+                            byte g = (byte)(c.G * 0.35);
+                            byte b = (byte)(c.B * 0.35);
+                            frameBorder.Background = new System.Windows.Media.SolidColorBrush(
+                                System.Windows.Media.Color.FromArgb(alpha, r, g, b));
+                        }
+                        catch
+                        {
+                            frameBorder.Background = new System.Windows.Media.SolidColorBrush(
+                                System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
+                        }
                     }
 
                     // 5. Update Note Text Contrast (if applicable)
