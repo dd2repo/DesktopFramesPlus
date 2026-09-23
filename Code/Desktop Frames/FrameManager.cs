@@ -3730,13 +3730,17 @@ namespace Desktop_Frames
                 string colorName = frame.CustomColor?.ToString();
                 if (string.IsNullOrEmpty(colorName)) colorName = SettingsManager.SelectedColor;
                 var c = Utility.GetColorFromName(colorName);
-                byte rT = (byte)(c.R * 0.28); byte gT = (byte)(c.G * 0.28); byte bT = (byte)(c.B * 0.28);
-                byte rB = (byte)(c.R * 0.10); byte gB = (byte)(c.G * 0.10); byte bB = (byte)(c.B * 0.10);
+                byte alphaTop = (byte)Math.Min(255, alpha * 0.75);
+                byte alphaMid = (byte)Math.Min(255, alpha * 0.55);
+                byte alphaBot = (byte)Math.Min(255, alpha * 1.10);
+                byte rT = (byte)(c.R * 0.45); byte gT = (byte)(c.G * 0.45); byte bT = (byte)(c.B * 0.45);
+                byte rM = (byte)(c.R * 0.22); byte gM = (byte)(c.G * 0.22); byte bM = (byte)(c.B * 0.22);
                 var grad = new System.Windows.Media.LinearGradientBrush();
                 grad.StartPoint = new System.Windows.Point(0, 0);
                 grad.EndPoint   = new System.Windows.Point(0, 1);
-                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rT, gT, bT), 0.0));
-                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rB, gB, bB), 1.0));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alphaTop, rT, gT, bT), 0.0));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alphaMid, rM, gM, bM), 0.35));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alphaBot, 0, 0, 0), 1.0));
                 return grad;
             }
             catch
@@ -3744,7 +3748,7 @@ namespace Desktop_Frames
                 var fb = new System.Windows.Media.LinearGradientBrush();
                 fb.StartPoint = new System.Windows.Point(0, 0);
                 fb.EndPoint   = new System.Windows.Point(0, 1);
-                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 15, 15, 15), 0.0));
+                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 20, 20, 20), 0.0));
                 fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0), 1.0));
                 return fb;
             }
@@ -3879,8 +3883,7 @@ namespace Desktop_Frames
                 Name = "FrameMenuIcon",
                 Text = MenuSymbol,
                 FontFamily = new System.Windows.Media.FontFamily("Segoe MDL2 Assets"),
-                FontSize = 16,
-                Foreground = System.Windows.Media.Brushes.White,
+                FontSize = 13, Foreground = System.Windows.Media.Brushes.White,
                 Margin = new Thickness(5, 0, 0, 0),
                 HorizontalAlignment = HorizontalAlignment.Left,
                 VerticalAlignment = VerticalAlignment.Top,
@@ -3963,11 +3966,7 @@ namespace Desktop_Frames
 
             // Create a Grid for the titlebar - move here to ensure it is created before mouse handler
             Grid titleGrid = new Grid
-            {
-                                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(30, 0, 0, 0)),
-                MinHeight = 22,
-                MaxHeight = 28
-            };
+            { Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(25, 0, 0, 0)) };
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Pixel) }); // Col 0: Spacer
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Col 1: Title
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                      // Col 2: Filter Icon (Auto width)
@@ -6928,6 +6927,26 @@ namespace Desktop_Frames
             sp.Children.Add(lbl);
             sp.Tag = new { FilePath = filePath, IsFolder = isFolder, Arguments = (string)(iconDict.ContainsKey("Arguments") ? iconDict["Arguments"] : null) };
             sp.ToolTip = new ToolTip { Content = originalDisplayName + "\nLoading target..." };
+
+            // macOS-like hover: scale zoom + semi-transparent highlight
+            sp.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
+            sp.RenderTransform = new System.Windows.Media.ScaleTransform(1.0, 1.0);
+            sp.MouseEnter += (hoverS, hoverE) =>
+            {
+                sp.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(45, 255, 255, 255));
+                var st = (System.Windows.Media.ScaleTransform)sp.RenderTransform;
+                var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.18, TimeSpan.FromMilliseconds(130)) { EasingFunction = ease });
+                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.18, TimeSpan.FromMilliseconds(130)) { EasingFunction = ease });
+            };
+            sp.MouseLeave += (hoverS, hoverE) =>
+            {
+                sp.Background = System.Windows.Media.Brushes.Transparent;
+                var st = (System.Windows.Media.ScaleTransform)sp.RenderTransform;
+                var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn };
+                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new System.Windows.Media.Animation.DoubleAnimation(1.18, 1.0, TimeSpan.FromMilliseconds(100)) { EasingFunction = ease });
+                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new System.Windows.Media.Animation.DoubleAnimation(1.18, 1.0, TimeSpan.FromMilliseconds(100)) { EasingFunction = ease });
+            };
 
             wpcont.Children.Add(sp); // ADD TO UI INSTANTLY!
 
