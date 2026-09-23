@@ -1,335 +1,288 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms; // For Screen.AllScreens
-using System.Windows.Media; // For VisualTreeHelper
+using System.Windows.Forms;
+using System.Windows.Media;
+using System.Windows.Media.Animation;
 
 namespace Desktop_Frames
 {
     public static class SnapManager
     {
-        private const double SnapThreshold = 20; // Reduced slightly for tighter feel
-        private const double MinGap = 10;        // Gap between snapped frames
+        private const double SnapThreshold = 24;
+        private const double MinGap = 8;
 
-        // Recursion guard to prevent the "fighting" loop
         private static bool _isSnapping = false;
-
-
-
-
         public static NonActivatingWindow ActiveDragWindow = null;
 
-        public static void StartDrag(NonActivatingWindow win)
+        // ── Snap-line overlay windows ─────────────────────────────────────
+        private static Window _lineH; // horizontal guide
+        private static Window _lineV; // vertical guide
+
+        private static readonly SolidColorBrush LineBrush =
+            new SolidColorBrush(Color.FromArgb(220, 0, 120, 212)); // Win11 blue
+
+        private static Window GetLine(ref Window field, bool horizontal)
         {
-            ActiveDragWindow = win;
+            if (field != null) return field;
+            var win = new Window
+            {
+                WindowStyle     = WindowStyle.None,
+                AllowsTransparency = true,
+                ShowInTaskbar   = false,
+                Topmost         = true,
+                IsHitTestVisible = false,
+                Background      = LineBrush,
+                Opacity         = 0
+            };
+            if (horizontal) { win.Height = 2; win.Width = 1; }
+            else             { win.Width  = 2; win.Height = 1; }
+            win.Show();
+            field = win;
+            return win;
         }
+
+        private static void ShowLine(ref Window field, bool horizontal,
+                                     double pos, double start, double length)
+        {
+            var w = GetLine(ref field, horizontal);
+            if (horizontal) { w.Left = start; w.Top  = pos;   w.Width  = length; w.Height = 2; }
+            else             { w.Top  = start; w.Left = pos;   w.Height = length; w.Width  = 2; }
+            FadeTo(w, 1.0);
+        }
+
+        private static void HideLine(Window w) { if (w != null) FadeTo(w, 0.0); }
+
+        private static void FadeTo(Window w, double target)
+        {
+            var anim = new DoubleAnimation(target, TimeSpan.FromMilliseconds(120));
+            w.BeginAnimation(Window.OpacityProperty, anim);
+        }
+
+        private static void HideAllLines()
+        {
+            HideLine(_lineH);
+            HideLine(_lineV);
+        }
+
+        // ── Drag lifecycle ────────────────────────────────────────────────
+        public static void StartDrag(NonActivatingWindow win) => ActiveDragWindow = win;
 
         public static void EndDrag(NonActivatingWindow win)
         {
             try
             {
+                HideAllLines();
                 if (ActiveDragWindow != win) return;
 
                 string myId = GetFrameIdFromWindow(win);
-                if (myId != null && FrameDataManager.DockingMap.TryGetValue(myId, out List<string> parentIds))
-                {
-                    AnimateSnapConfirmation(win);
+                if (myId != null && FrameDataManager.DockingMap.TryGetValue(myId, out var parentIds))
                     FrameDataManager.UpdateDockedRelationships(myId, parentIds);
-                }
                 else if (myId != null)
-                {
-                    ShowSnapPreview(win, false);
                     FrameDataManager.UpdateDockedRelationships(myId, null);
-                }
             }
-            finally
-            {
-                ActiveDragWindow = null;
-            }
+            finally { ActiveDragWindow = null; }
         }
 
-        public static void AddSnapping(NonActivatingWindow win, IDictionary<string, object> FrameData)
+        public static void AddSnapping(NonActivatingWindow win, IDictionary<string, object> frameData)
         {
-            string myId = FrameData.ContainsKey("Id") ? FrameData["Id"].ToString() : null;
+            string myId = frameData.ContainsKey("Id") ? frameData["Id"].ToString() : null;
 
-            win.PreviewMouseLeftButtonUp += (sender, e) =>
+            win.LocationChanged += (s, e) =>
             {
-                if (myId != null && FrameDataManager.DockingMap.TryGetValue(myId, out List<string> parentIds))
-                {
-                    AnimateSnapConfirmation(win);
-                    FrameDataManager.UpdateDockedRelationships(myId, parentIds);
-                }
-                else if (myId != null)
-                {
-                    ShowSnapPreview(win, false);
-                    FrameDataManager.UpdateDockedRelationships(myId, null);
-                }
-            };
-
-            win.LocationChanged += (sender, e) =>
-            {
-                if (_isSnapping) return;
-                if (ActiveDragWindow != win) return;
-
+                if (_isSnapping || ActiveDragWindow != win) return;
                 _isSnapping = true;
                 try
                 {
-                    var allFrames = System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>().ToList();
-                    var (newLeft, newTop) = CalculateSnapPosition(win, allFrames);
+                    var all = System.Windows.Application.Current.Windows
+                                    .OfType<NonActivatingWindow>().ToList();
+                    var (newLeft, newTop, snapXPos, snapYPos, snapXRange, snapYRange) =
+                        CalculateSnap(win, all);
 
+                    // Update snap line overlays
+                    if (snapYPos.HasValue)
+                        ShowLine(ref _lineH, true, snapYPos.Value,
+                                 snapXRange.start, snapXRange.length);
+                    else
+                        HideLine(_lineH);
+
+                    if (snapXPos.HasValue)
+                        ShowLine(ref _lineV, false, snapXPos.Value,
+                                 snapYRange.start, snapYRange.length);
+                    else
+                        HideLine(_lineV);
+
+                    // Apply position
                     if (Math.Abs(win.Left - newLeft) > 0.1 || Math.Abs(win.Top - newTop) > 0.1)
                     {
                         win.Left = newLeft;
-                        win.Top = newTop;
-                        FrameData["X"] = newLeft;
-                        FrameData["Y"] = newTop;
+                        win.Top  = newTop;
+                        frameData["X"] = newLeft;
+                        frameData["Y"] = newTop;
                         FrameDataManager.SaveFrameData();
+                    }
 
-                        if (myId != null)
+                    // Track docking parents
+                    if (myId != null)
+                    {
+                        var parents = all.Where(f =>
                         {
-                            // Find ALL co-parents sitting above this window that overlap horizontally by at least 20%
-                            var parents = allFrames.Where(f =>
-                            {
-                                if (f == win) return false;
-                                bool verticalMatch = Math.Abs(f.Top + f.Height + MinGap - newTop) < SnapThreshold;
-                                double overlapWidth = Math.Min(f.Left + f.Width, newLeft + win.Width) - Math.Max(f.Left, newLeft);
-                                return verticalMatch && overlapWidth > (Math.Min(f.Width, win.Width) * 0.2);
-                            }).ToList();
+                            if (f == win) return false;
+                            bool vMatch = Math.Abs(f.Top + f.Height + MinGap - newTop) < SnapThreshold;
+                            double overlap = Math.Min(f.Left + f.Width, newLeft + win.Width)
+                                           - Math.Max(f.Left, newLeft);
+                            return vMatch && overlap > Math.Min(f.Width, win.Width) * 0.2;
+                        }).ToList();
 
-                            var parentIds = parents.Select(p => GetFrameIdFromWindow(p)).Where(id => id != null).ToList();
-
-                            if (parentIds.Count > 0)
-                            {
-                                FrameDataManager.DockingMap[myId] = parentIds;
-                                ShowSnapPreview(win, true);
-                            }
-                            else
-                            {
-                                FrameDataManager.DockingMap.Remove(myId);
-                                ShowSnapPreview(win, false);
-                            }
-                        }
+                        var pIds = parents.Select(p => GetFrameIdFromWindow(p))
+                                         .Where(id => id != null).ToList();
+                        if (pIds.Count > 0) FrameDataManager.DockingMap[myId] = pIds;
+                        else                FrameDataManager.DockingMap.Remove(myId);
                     }
                 }
-                finally
-                {
-                    _isSnapping = false;
-                }
+                finally { _isSnapping = false; }
+            };
+
+            win.PreviewMouseLeftButtonUp += (s, e) =>
+            {
+                HideAllLines();
+                if (myId != null && FrameDataManager.DockingMap.TryGetValue(myId, out var pIds))
+                    FrameDataManager.UpdateDockedRelationships(myId, pIds);
+                else if (myId != null)
+                    FrameDataManager.UpdateDockedRelationships(myId, null);
             };
         }
 
-
-
-        private static (double, double) CalculateSnapPosition(NonActivatingWindow current, List<NonActivatingWindow> allFrames)
+        // ── Core snap calculation ─────────────────────────────────────────
+        // Returns: (newLeft, newTop, snapX, snapY, xSpan, ySpan)
+        private static (double, double, double?, double?,
+                         (double start, double length),
+                         (double start, double length))
+            CalculateSnap(NonActivatingWindow cur, List<NonActivatingWindow> all)
         {
-            if (!SettingsManager.IsSnapEnabled) return (current.Left, current.Top);
+            if (!SettingsManager.IsSnapEnabled)
+                return (cur.Left, cur.Top, null, null, (0, 0), (0, 0));
 
-            double currentLeft = current.Left;
-            double currentTop = current.Top;
-            double currentRight = currentLeft + current.Width;
-            double currentBottom = currentTop + current.Height;
+            double cL = cur.Left, cT = cur.Top;
+            double cR = cL + cur.Width, cB = cT + cur.Height;
 
-            // We look for the SMALLEST adjustment needed to snap
-            double minDeltaX = double.MaxValue;
-            double minDeltaY = double.MaxValue;
+            double dX = double.MaxValue, dY = double.MaxValue;
+            double? bestXLine = null, bestYLine = null;
+            double xSpanStart = 0, xSpanLen = 2000, ySpanStart = 0, ySpanLen = 2000;
 
-            // 1. Snap to Other Frames
-            foreach (var other in allFrames)
+            foreach (var other in all)
             {
-                if (other == current) continue;
+                if (other == cur) continue;
+                double oL = other.Left, oT = other.Top;
+                double oR = oL + other.Width, oB = oT + other.Height;
 
-                double otherLeft = other.Left;
-                double otherTop = other.Top;
-                double otherRight = otherLeft + other.Width;
-                double otherBottom = otherTop + other.Height;
+                // X snaps — record snap-line position and which edges overlap vertically
+                void TryX(double cPos, double tPos, double lineX)
+                {
+                    double d = tPos - cPos;
+                    if (Math.Abs(d) <= SnapThreshold && Math.Abs(d) < Math.Abs(dX))
+                    {
+                        dX = d;
+                        bestXLine = lineX;
+                        ySpanStart = Math.Min(cT, oT);
+                        ySpanLen   = Math.Max(cB, oB) - ySpanStart;
+                    }
+                }
+                TryX(cR, oL - MinGap, oL);
+                TryX(cL, oR + MinGap, oR);
+                TryX(cL, oL, oL);
+                TryX(cR, oR, oR);
 
-                // Horizontal Checks
-                // Snap Right Side to Other's Left
-                CheckSnap(currentRight, otherLeft - MinGap, ref minDeltaX);
-                // Snap Left Side to Other's Right
-                CheckSnap(currentLeft, otherRight + MinGap, ref minDeltaX);
-                // Align Lefts
-                CheckSnap(currentLeft, otherLeft, ref minDeltaX);
-                // Align Rights
-                CheckSnap(currentRight, otherRight, ref minDeltaX);
-
-                // Vertical Checks
-                // Snap Bottom to Other's Top
-                CheckSnap(currentBottom, otherTop - MinGap, ref minDeltaY);
-                // Snap Top to Other's Bottom
-                CheckSnap(currentTop, otherBottom + MinGap, ref minDeltaY);
-                // Align Tops
-                CheckSnap(currentTop, otherTop, ref minDeltaY);
-                // Align Bottoms
-                CheckSnap(currentBottom, otherBottom, ref minDeltaY);
+                // Y snaps
+                void TryY(double cPos, double tPos, double lineY)
+                {
+                    double d = tPos - cPos;
+                    if (Math.Abs(d) <= SnapThreshold && Math.Abs(d) < Math.Abs(dY))
+                    {
+                        dY = d;
+                        bestYLine = lineY;
+                        xSpanStart = Math.Min(cL, oL);
+                        xSpanLen   = Math.Max(cR, oR) - xSpanStart;
+                    }
+                }
+                TryY(cB, oT - MinGap, oT);
+                TryY(cT, oB + MinGap, oB);
+                TryY(cT, oT, oT);
+                TryY(cB, oB, oB);
             }
 
-            // 2. Snap to Screen Edges (DPI Aware)
-            // We need to get the DPI scale factor. Assuming uniform scaling for simplicity, 
-            // but ideally should be per-monitor.
-            double dpiScale = GetDpiScale(current);
-
+            // Screen-edge snaps
+            double dpi = GetDpiScale(cur);
             foreach (var screen in Screen.AllScreens)
             {
-                // Convert Pixel bounds to WPF Coordinates
-                double sLeft = screen.Bounds.Left / dpiScale;
-                double sTop = screen.Bounds.Top / dpiScale;
-                double sRight = screen.Bounds.Right / dpiScale;
-                double sBottom = screen.Bounds.Bottom / dpiScale;
-
-                // Horizontal Screen Snaps
-                CheckSnap(currentLeft, sLeft, ref minDeltaX);
-                CheckSnap(currentRight, sRight, ref minDeltaX);
-
-                // Vertical Screen Snaps
-                CheckSnap(currentTop, sTop, ref minDeltaY);
-                CheckSnap(currentBottom, sBottom, ref minDeltaY);
+                double sL = screen.Bounds.Left / dpi, sT = screen.Bounds.Top / dpi;
+                double sR = screen.Bounds.Right / dpi, sB = screen.Bounds.Bottom / dpi;
+                CheckSnap(cL, sL, ref dX); CheckSnap(cR, sR, ref dX);
+                CheckSnap(cT, sT, ref dY); CheckSnap(cB, sB, ref dY);
             }
 
-            // 3. Apply the smallest valid delta found
-            double finalX = (Math.Abs(minDeltaX) < double.MaxValue) ? currentLeft + minDeltaX : currentLeft;
-            double finalY = (Math.Abs(minDeltaY) < double.MaxValue) ? currentTop + minDeltaY : currentTop;
-
-            return (finalX, finalY);
+            double finalX = dX < double.MaxValue ? cL + dX : cL;
+            double finalY = dY < double.MaxValue ? cT + dY : cT;
+            return (finalX, finalY, bestXLine, bestYLine,
+                    (xSpanStart, xSpanLen), (ySpanStart, ySpanLen));
         }
 
-        // Helper to check if a snap point is closer than the current best
-        private static void CheckSnap(double currentPos, double targetPos, ref double minDelta)
+        private static void CheckSnap(double cur, double tgt, ref double best)
         {
-            double delta = targetPos - currentPos;
-
-            // Check if within threshold AND closer than any previous match
-            if (Math.Abs(delta) <= SnapThreshold && Math.Abs(delta) < Math.Abs(minDelta))
-            {
-                minDelta = delta;
-            }
+            double d = tgt - cur;
+            if (Math.Abs(d) <= SnapThreshold && Math.Abs(d) < Math.Abs(best)) best = d;
         }
 
-        // Helper to get DPI scaling
-        private static double GetDpiScale(Visual visual)
-        {
-            try
-            {
-                var source = PresentationSource.FromVisual(visual);
-                if (source != null && source.CompositionTarget != null)
-                {
-                    return source.CompositionTarget.TransformToDevice.M11;
-                }
-            }
-            catch { }
-            return 1.0; // Default if fails
-        }
-        // --- CONSTRAINT-BASED MULTI-PARENT STACK RESOLVER ---
+        // ── Cascade / docking ─────────────────────────────────────────────
         public static void CascadeStack(string parentId, double deltaY)
         {
-            // Find all children that list this parentId in their co-parent list
-            var childrenIds = FrameDataManager.DockingMap
-                .Where(kvp => kvp.Value != null && kvp.Value.Contains(parentId))
-                .Select(kvp => kvp.Key)
-                .ToList();
+            var childIds = FrameDataManager.DockingMap
+                .Where(kvp => kvp.Value?.Contains(parentId) == true)
+                .Select(kvp => kvp.Key).ToList();
 
-            foreach (var childId in childrenIds)
+            foreach (var cid in childIds)
             {
-                var win = System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>()
-                    .FirstOrDefault(w => GetFrameIdFromWindow(w) == childId);
+                var cwin = System.Windows.Application.Current.Windows
+                    .OfType<NonActivatingWindow>()
+                    .FirstOrDefault(w => GetFrameIdFromWindow(w) == cid);
+                if (cwin == null) continue;
 
-                if (win != null && FrameDataManager.DockingMap.TryGetValue(childId, out List<string> parentIds))
+                if (FrameDataManager.DockingMap.TryGetValue(cid, out var pIds))
                 {
-                    // Find all currently active window instances for all co-parents of this child
-                    var activeParents = System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>()
-                        .Where(w => parentIds.Contains(GetFrameIdFromWindow(w)))
-                        .ToList();
+                    var activeParents = System.Windows.Application.Current.Windows
+                        .OfType<NonActivatingWindow>()
+                        .Where(w => pIds.Contains(GetFrameIdFromWindow(w))).ToList();
+                    if (activeParents.Count == 0) continue;
 
-                    if (activeParents.Count > 0)
+                    double target = activeParents.Max(p => p.Top + p.Height) + 10.0;
+                    if (Math.Abs(cwin.Top - target) > 0.5)
                     {
-                        // The golden geometric rule: Anchor below the lowest unrolled bottom edge among all co-parents
-                        double maxParentBottom = activeParents.Max(p => p.Top + p.Height);
-                        double targetTop = maxParentBottom + 10.0; // Standard 10px snap gap
-
-                        if (Math.Abs(win.Top - targetTop) > 0.5)
-                        {
-                            double actualDeltaY = targetTop - win.Top;
-                            win.Top = targetTop;
-
-                            // Recursively cascade downstream to any frames docked beneath this child
-                            CascadeStack(childId, actualDeltaY);
-                        }
+                        double actual = target - cwin.Top;
+                        cwin.Top = target;
+                        CascadeStack(cid, actual);
                     }
                 }
             }
         }
-        public static string GetFrameIdFromWindow(NonActivatingWindow win)
-        {
-            return win?.Tag?.ToString();
-        }
-        // --- ACCORDION SNAP FEEDBACK ENGINE ---
-        // Holds a vibrant border pulse for 350ms before smoothly fading out over 650ms (1000ms total)
-        // --- INTERACTIVE SNAP FEEDBACK ENGINE ---
-        private static readonly Dictionary<NonActivatingWindow, System.Windows.Media.Brush> _snapOrigBrushes = new Dictionary<NonActivatingWindow, System.Windows.Media.Brush>();
-        private static readonly Dictionary<NonActivatingWindow, Thickness> _snapOrigThicknesses = new Dictionary<NonActivatingWindow, Thickness>();
-        private static readonly HashSet<NonActivatingWindow> _inSnapPreview = new HashSet<NonActivatingWindow>();
-        public static void ShowSnapPreview(NonActivatingWindow win, bool isSnapped)
+
+        // ── Helpers ───────────────────────────────────────────────────────
+        public static string GetFrameIdFromWindow(NonActivatingWindow win) => win?.Tag?.ToString();
+
+        private static double GetDpiScale(Visual v)
         {
             try
             {
-                if (win?.Content is not Border border) return;
-
-                if (isSnapped)
-                {
-                    if (!_inSnapPreview.Contains(win))
-                    {
-                        _inSnapPreview.Add(win);
-                        _snapOrigBrushes[win] = border.BorderBrush;
-                        _snapOrigThicknesses[win] = border.BorderThickness;
-
-                        border.BeginAnimation(Border.BorderBrushProperty, null);
-                        border.BorderBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 210, 255));
-                        border.BorderThickness = new Thickness(Math.Max(3, _snapOrigThicknesses[win].Top + 2));
-                    }
-                }
-                else if (_inSnapPreview.Contains(win))
-                {
-                    _inSnapPreview.Remove(win);
-                    border.BeginAnimation(Border.BorderBrushProperty, null);
-                    if (_snapOrigBrushes.TryGetValue(win, out System.Windows.Media.Brush origB)) border.BorderBrush = origB;
-                    if (_snapOrigThicknesses.TryGetValue(win, out Thickness origT)) border.BorderThickness = origT;
-                }
+                var src = PresentationSource.FromVisual(v);
+                if (src?.CompositionTarget != null) return src.CompositionTarget.TransformToDevice.M11;
             }
             catch { }
+            return 1.0;
         }
-        public static void AnimateSnapConfirmation(NonActivatingWindow win)
-        {
-            try
-            {
-                if (win?.Content is not Border border || !_inSnapPreview.Contains(win)) return;
-                _inSnapPreview.Remove(win);
 
-                System.Windows.Media.Brush origBrush = _snapOrigBrushes.ContainsKey(win) ? _snapOrigBrushes[win] : border.BorderBrush;
-                Thickness origThick = _snapOrigThicknesses.ContainsKey(win) ? _snapOrigThicknesses[win] : border.BorderThickness;
-
-                var pulseBrush = new SolidColorBrush(System.Windows.Media.Color.FromRgb(0, 210, 255));
-                border.BorderBrush = pulseBrush;
-                border.BorderThickness = origThick;
-
-                var fadePulse = new System.Windows.Media.Animation.DoubleAnimation
-                {
-                    From = 1.0,
-                    To = 0.0,
-                    Duration = TimeSpan.FromMilliseconds(500),
-                    EasingFunction = new System.Windows.Media.Animation.QuadraticEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut }
-                };
-
-                fadePulse.Completed += (s, e) =>
-                {
-                    pulseBrush.BeginAnimation(System.Windows.Media.Brush.OpacityProperty, null);
-                    border.BorderBrush = origBrush;
-                };
-
-                pulseBrush.BeginAnimation(System.Windows.Media.Brush.OpacityProperty, fadePulse);
-            }
-            catch { }
-        }
+        // Legacy stubs kept so callers compile
+        public static void ShowSnapPreview(NonActivatingWindow win, bool isSnapped) { }
+        public static void AnimateSnapConfirmation(NonActivatingWindow win) { }
     }
 }
