@@ -1,4 +1,4 @@
-﻿using Desktop_Frames.Localization;
+using Desktop_Frames.Localization;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -91,7 +91,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(248, 249, 250));
+                this.Background = Brushes.Transparent;
                 this.ResizeMode = ResizeMode.NoResize;
 
                 // Set icon from executable
@@ -108,10 +108,7 @@ namespace Desktop_Frames
                 // Main container with modern card design
                 Border mainCard = new Border
                 {
-                    Background = Brushes.White,
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(218, 220, 224)),
-                    BorderThickness = new Thickness(1),
-                    Margin = new Thickness(8),
+                    Background = Brushes.White, CornerRadius = new CornerRadius(8), BorderBrush = Brushes.Transparent, BorderThickness = new Thickness(0), Margin = new Thickness(0),
                     Effect = new DropShadowEffect
                     {
                         Color = Colors.Black,
@@ -246,10 +243,8 @@ namespace Desktop_Frames
             TextBlock titleBlock = new TextBlock
             {
                 Text = Strings.CustomizeTitle,
-                FontFamily = new FontFamily("Segoe UI"),
-                FontSize = 18,
-                FontWeight = FontWeights.Bold,
-                Foreground = Brushes.White,
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
+                FontSize = 16, FontWeight = FontWeights.SemiBold, Foreground = Brushes.White,
                 VerticalAlignment = VerticalAlignment.Center,
                 Margin = new Thickness(16, 0, 0, 0)
             };
@@ -262,7 +257,7 @@ namespace Desktop_Frames
                 Width = 32,
                 Height = 32,
                 FontSize = 16,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontWeight = FontWeights.Bold,
                 Foreground = Brushes.White,
                 Background = Brushes.Transparent,
@@ -327,8 +322,7 @@ namespace Desktop_Frames
             Border footerBorder = new Border
             {
                 Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
-                BorderBrush = new SolidColorBrush(Color.FromRgb(218, 220, 224)),
-                BorderThickness = new Thickness(0, 1, 0, 0),
+                BorderBrush = new SolidColorBrush(Color.FromRgb(235, 236, 237)), BorderThickness = new Thickness(0, 1, 0, 0),
                 Padding = new Thickness(16, 8, 16, 8)
             };
             Grid.SetRow(footerBorder, 2);
@@ -349,7 +343,7 @@ namespace Desktop_Frames
                 MinWidth = 80,
                 Padding = new Thickness(10, 0, 10, 0),
                 Height = 34,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Background = new SolidColorBrush(Color.FromRgb(80, 80, 80)), // Dark Gray
@@ -367,7 +361,7 @@ namespace Desktop_Frames
                 MinWidth = 100,
                 Padding = new Thickness(10, 0, 10, 0),
                 Height = 34,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Background = new SolidColorBrush(Color.FromRgb(34, 139, 34)), // Green
@@ -385,7 +379,7 @@ namespace Desktop_Frames
                 MinWidth = 100,
                 Padding = new Thickness(10, 0, 10, 0),
                 Height = 33,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
@@ -404,7 +398,7 @@ namespace Desktop_Frames
                 MinWidth = 100,
                 Padding = new Thickness(10, 0, 10, 0),
                 Height = 34,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Background = new SolidColorBrush(_userAccentColor),
@@ -429,7 +423,7 @@ namespace Desktop_Frames
             GroupBox frameGroupBox = new GroupBox
             {
                 Header = Strings.TabFrame,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 14,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(_userAccentColor),
@@ -453,7 +447,7 @@ namespace Desktop_Frames
             GroupBox titleGroupBox = new GroupBox
             {
                 Header = Strings.TabTitle,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 14,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(_userAccentColor),
@@ -476,7 +470,7 @@ namespace Desktop_Frames
             GroupBox iconsGroupBox = new GroupBox
             {
                 Header = Strings.TabIcons,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 14,
                 FontWeight = FontWeights.Bold,
                 Foreground = new SolidColorBrush(_userAccentColor),
@@ -518,7 +512,7 @@ namespace Desktop_Frames
             TextBlock label = new TextBlock
             {
                 Text = labelText,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
@@ -529,7 +523,7 @@ namespace Desktop_Frames
 
             comboBox = new ComboBox
             {
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Width = 180,
@@ -564,7 +558,7 @@ namespace Desktop_Frames
             TextBlock label = new TextBlock
             {
                 Text = labelText,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
@@ -578,7 +572,7 @@ namespace Desktop_Frames
                 Minimum = min,
                 Maximum = max,
                 Value = min,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Width = 80,
@@ -598,7 +592,7 @@ namespace Desktop_Frames
             checkBox = new CheckBox
             {
                 Content = labelText,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 FontWeight = FontWeights.Normal,
                 Foreground = new SolidColorBrush(Color.FromRgb(95, 99, 104)),
@@ -1779,7 +1773,7 @@ namespace Desktop_Frames
             _textBox = new TextBox
             {
                 Text = _value.ToString(),
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 12,
                 VerticalContentAlignment = VerticalAlignment.Center,
                 BorderBrush = new SolidColorBrush(Color.FromRgb(171, 173, 179)),
@@ -1805,7 +1799,7 @@ namespace Desktop_Frames
                 Width = 18,
                 VerticalAlignment = VerticalAlignment.Stretch, // Fills its 50% half automatically
                 FontSize = 6,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 Padding = new Thickness(0),
                 Margin = new Thickness(1, 0, 0, 0),
                 Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),
@@ -1823,7 +1817,7 @@ namespace Desktop_Frames
                 Width = 18,
                 VerticalAlignment = VerticalAlignment.Stretch, // Fills its 50% half automatically
                 FontSize = 6,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 Padding = new Thickness(0),
                 Margin = new Thickness(1, 0, 0, 0),
                 Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)),

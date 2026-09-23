@@ -18,6 +18,23 @@ namespace Desktop_Frames
     /// </summary>
     public static class MessageBoxesManager
     {
+        // Win11 rounded button template — CornerRadius=6, no default WPF chrome
+        private static void MakeRounded(Button btn, int radius = 6)
+        {
+            var t = new ControlTemplate(typeof(Button));
+            var border = new FrameworkElementFactory(typeof(Border));
+            border.SetBinding(Border.BackgroundProperty, new System.Windows.Data.Binding("Background") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderBrushProperty, new System.Windows.Data.Binding("BorderBrush") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetBinding(Border.BorderThicknessProperty, new System.Windows.Data.Binding("BorderThickness") { RelativeSource = new System.Windows.Data.RelativeSource(System.Windows.Data.RelativeSourceMode.TemplatedParent) });
+            border.SetValue(Border.CornerRadiusProperty, new CornerRadius(radius));
+            var cp = new FrameworkElementFactory(typeof(ContentPresenter));
+            cp.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
+            cp.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
+            border.AppendChild(cp);
+            t.VisualTree = border;
+            btn.Template = t;
+        }
+
         #region ShowCustomMessageBoxForm - Delete Confirmation Dialog
         /// <summary>
         /// Shows a modern WPF confirmation dialog for frame deletion
@@ -127,7 +144,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
+                this.Background = Brushes.Transparent;
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -168,7 +185,8 @@ namespace Desktop_Frames
                 Border mainCard = new Border
                 {
                     Background = Brushes.White,
-                    Margin = new Thickness(8, 8, 8, 1),
+                    CornerRadius = new CornerRadius(8),
+                    Margin = new Thickness(0),
                     Effect = new DropShadowEffect
                     {
                         Color = Colors.Black,
@@ -293,7 +311,9 @@ namespace Desktop_Frames
                 btnYes.MouseLeave += (s, e) => btnYes.Background = new SolidColorBrush(Color.FromRgb(234, 67, 53));
                 btnYes.Click += (s, e) => { _result = true; this.Close(); };
 
-                buttonArea.Children.Add(btnNo); buttonArea.Children.Add(btnYes);
+                MakeRounded(btnNo);
+                buttonArea.Children.Add(btnNo); MakeRounded(btnYes);
+                buttonArea.Children.Add(btnYes);
                 Grid.SetColumn(buttonArea, 1); Grid.SetRow(buttonArea, 1);
 
                 contentGrid.Children.Add(iconContainer); contentGrid.Children.Add(messageArea); contentGrid.Children.Add(buttonArea);
@@ -399,7 +419,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
+                this.Background = Brushes.Transparent;
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -511,6 +531,7 @@ namespace Desktop_Frames
                 manualCloseButton.MouseEnter += (s, e) => manualCloseButton.Background = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255));
                 manualCloseButton.MouseLeave += (s, e) => manualCloseButton.Background = Brushes.Transparent;
                 manualCloseButton.Click += (s, e) => this.Close();
+                MakeRounded(manualCloseButton, 4);
                 Grid.SetColumn(manualCloseButton, 2);
 
                 headerGrid.Children.Add(titleLabel);
@@ -633,7 +654,7 @@ namespace Desktop_Frames
                 this.Height = 180;
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
-                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
+                this.Background = Brushes.Transparent;
                 this.AllowsTransparency = true;
                 this.Topmost = true;
                 this.ResizeMode = ResizeMode.NoResize;
@@ -823,7 +844,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
+                this.Background = Brushes.Transparent;
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -862,7 +883,8 @@ namespace Desktop_Frames
                 Border mainCard = new Border
                 {
                     Background = Brushes.White,
-                    Margin = new Thickness(8),
+                    CornerRadius = new CornerRadius(8),
+                    Margin = new Thickness(0),
                     Effect = new DropShadowEffect
                     {
                         Color = Colors.Black,
@@ -1061,7 +1083,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
+                this.Background = Brushes.Transparent;
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -1086,7 +1108,8 @@ namespace Desktop_Frames
                 Border mainCard = new Border
                 {
                     Background = Brushes.White,
-                    Margin = new Thickness(8, 8, 8, 1),
+                    CornerRadius = new CornerRadius(8),
+                    Margin = new Thickness(0),
                     Effect = new DropShadowEffect
                     {
                         Color = Colors.Black,
@@ -1230,7 +1253,9 @@ namespace Desktop_Frames
                 btnYes.MouseLeave += (s, e) => btnYes.Background = new SolidColorBrush(Color.FromRgb(234, 67, 53));
                 btnYes.Click += (s, e) => { _result = true; this.Close(); };
 
+                MakeRounded(btnNo);
                 buttonArea.Children.Add(btnNo);
+                MakeRounded(btnYes);
                 buttonArea.Children.Add(btnYes);
                 Grid.SetColumn(buttonArea, 1);
                 Grid.SetRow(buttonArea, 1);
@@ -1443,7 +1468,7 @@ namespace Desktop_Frames
                 this.WindowStartupLocation = WindowStartupLocation.Manual;
                 this.WindowStyle = WindowStyle.None;
                 this.AllowsTransparency = true;
-                this.Background = new SolidColorBrush(Color.FromRgb(247, 248, 250));
+                this.Background = Brushes.Transparent;
                 this.ResizeMode = ResizeMode.NoResize;
                 this.Topmost = true;
                 this.MouseLeftButtonDown += (s, e) => { if (e.ButtonState == MouseButtonState.Pressed) this.DragMove(); };
@@ -1468,7 +1493,8 @@ namespace Desktop_Frames
                 Border mainCard = new Border
                 {
                     Background = Brushes.White,
-                    Margin = new Thickness(8, 8, 8, 1),
+                    CornerRadius = new CornerRadius(8),
+                    Margin = new Thickness(0),
                     Effect = new DropShadowEffect
                     {
                         Color = Colors.Black,
@@ -1617,7 +1643,9 @@ namespace Desktop_Frames
                 btnYes.MouseLeave += (s, e) => btnYes.Background = new SolidColorBrush(Color.FromRgb(234, 67, 53));
                 btnYes.Click += (s, e) => { _result = true; this.Close(); };
 
+                MakeRounded(btnNo);
                 buttonArea.Children.Add(btnNo);
+                MakeRounded(btnYes);
                 buttonArea.Children.Add(btnYes);
                 Grid.SetColumn(buttonArea, 1);
                 Grid.SetRow(buttonArea, 1);

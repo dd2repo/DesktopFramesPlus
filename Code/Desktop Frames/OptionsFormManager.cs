@@ -42,7 +42,7 @@ namespace Desktop_Frames
                     WindowStartupLocation = WindowStartupLocation.CenterScreen,
                     ResizeMode = ResizeMode.NoResize,
                     WindowStyle = WindowStyle.None,
-                    Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)),
+                    Background = Brushes.White,
                     AllowsTransparency = true
                 };
 
@@ -134,8 +134,8 @@ namespace Desktop_Frames
             contentGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
             Grid.SetRow(contentGrid, 1);
 
-            StackPanel tabPanel = new StackPanel { Background = new SolidColorBrush(Color.FromRgb(240, 240, 240)), Margin = new Thickness(0, 20, 0, 0) };
-            Border contentBorder = new Border { Background = Brushes.White, BorderBrush = new SolidColorBrush(Color.FromRgb(218, 220, 224)), BorderThickness = new Thickness(1, 0, 0, 0), Padding = new Thickness(20), Margin = new Thickness(0, 20, 0, 0) };
+            StackPanel tabPanel = new StackPanel { Background = new SolidColorBrush(Color.FromRgb(245, 245, 248)), Margin = new Thickness(0, 20, 0, 0) };
+            Border contentBorder = new Border { Background = Brushes.White, BorderBrush = Brushes.Transparent, BorderThickness = new Thickness(0), Padding = new Thickness(20), Margin = new Thickness(0, 20, 0, 0) };
 
             _tabControl = new TabControl { Background = Brushes.Transparent, BorderThickness = new Thickness(0) };
             var template = new ControlTemplate(typeof(TabControl));
@@ -172,7 +172,7 @@ namespace Desktop_Frames
             {
                 Content = title,
                 Height = 40,
-                FontFamily = new FontFamily("Segoe UI"),
+                FontFamily = new FontFamily("Segoe UI Variable Display"),
                 FontSize = 14,
                 FontWeight = FontWeights.Bold,
                 BorderThickness = new Thickness(0),
@@ -195,7 +195,7 @@ namespace Desktop_Frames
             Color activeColor = tabIndex switch { 1 => ColorStyle, 2 => ColorTools, 3 => ColorProfiles, 4 => ColorHotkeys, 5 => ColorSmartDesktop, 6 => ColorLookDeeper, _ => _userAccentColor };
             if (isSelected) { button.Background = new SolidColorBrush(activeColor); button.Foreground = Brushes.White; }
             else if (isHover) { button.Background = new SolidColorBrush(Color.FromRgb((byte)(activeColor.R + 40), (byte)(activeColor.G + 40), (byte)(activeColor.B + 40))); button.Foreground = Brushes.White; }
-            else { button.Background = new SolidColorBrush(Color.FromRgb(200, 200, 200)); button.Foreground = new SolidColorBrush(Color.FromRgb(60, 60, 60)); }
+            else { button.Background = new SolidColorBrush(Color.FromRgb(245, 245, 248)); button.Foreground = new SolidColorBrush(Color.FromRgb(50, 50, 50)); }
         }
 
         private static void SelectTab(int tabIndex, Button selectedButton)
@@ -906,9 +906,13 @@ namespace Desktop_Frames
         }
 
         // --- Helpers ---
-        private static void CreateSectionHeader(StackPanel p, string t, Color c) => p.Children.Add(new TextBlock { Text = t, FontFamily = new FontFamily("Segoe UI"), FontSize = 16, FontWeight = FontWeights.Bold, Foreground = new SolidColorBrush(c), Margin = new Thickness(0, 10, 0, 15) });
-        private static void CreateCheckBox(StackPanel p, string t, string n, bool c) => p.Children.Add(new CheckBox { Name = n, Content = t, IsChecked = c, FontFamily = new FontFamily("Segoe UI"), FontSize = 13, Margin = new Thickness(15, 8, 0, 8) });
-        private static CheckBox CreateCheckBoxReturn(StackPanel p, string t, string n, bool c) { var cb = new CheckBox { Name = n, Content = t, IsChecked = c, FontFamily = new FontFamily("Segoe UI"), FontSize = 13, Margin = new Thickness(15, 8, 0, 8) }; p.Children.Add(cb); return cb; }
+        private static void CreateSectionHeader(StackPanel p, string t, Color c)
+        {
+            p.Children.Add(new TextBlock { Text = t, FontFamily = new FontFamily("Segoe UI Variable Display"), FontSize = 13, FontWeight = FontWeights.SemiBold, Foreground = new SolidColorBrush(c), Margin = new Thickness(0, 18, 0, 4) });
+            p.Children.Add(new Border { Background = new SolidColorBrush(Color.FromRgb(232, 232, 235)), Height = 1, Margin = new Thickness(0, 0, 0, 8) });
+        }
+        private static void CreateCheckBox(StackPanel p, string t, string n, bool c) => p.Children.Add(new CheckBox { Name = n, Content = t, IsChecked = c, FontFamily = new FontFamily("Segoe UI Variable Display"), FontSize = 13, Margin = new Thickness(15, 6, 0, 6) });
+        private static CheckBox CreateCheckBoxReturn(StackPanel p, string t, string n, bool c) { var cb = new CheckBox { Name = n, Content = t, IsChecked = c, FontFamily = new FontFamily("Segoe UI Variable Display"), FontSize = 13, Margin = new Thickness(15, 6, 0, 6) }; p.Children.Add(cb); return cb; }
 
         // FIX: Added 'max' parameter (defaulting to 100) to fix the Tint sliders while supporting AutoHideTime
         private static void CreateSliderControl(StackPanel p, string l, string n, int v, int max = 100)
@@ -1350,7 +1354,7 @@ namespace Desktop_Frames
 
         private static void CreateFooter(Grid mainGrid)
         {
-            Border f = new Border { Background = new SolidColorBrush(Color.FromRgb(248, 249, 250)), BorderBrush = new SolidColorBrush(Color.FromRgb(218, 220, 224)), BorderThickness = new Thickness(0, 1, 0, 0), Padding = new Thickness(20, 8, 20, 8) };
+            Border f = new Border { Background = Brushes.White, BorderBrush = new SolidColorBrush(Color.FromRgb(218, 220, 224)), BorderThickness = new Thickness(0, 1, 0, 0), Padding = new Thickness(20, 8, 20, 8) };
             Grid.SetRow(f, 2);
             StackPanel sp = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right };
 
