@@ -6804,7 +6804,7 @@ namespace Desktop_Frames
                 Width = iconWidth,
                 Height = iconHeight,
                 Margin = new Thickness(5),
-                Clip = new System.Windows.Media.RectangleGeometry(new Rect(0, 0, iconWidth, iconHeight), 4, 4)
+                Clip = new System.Windows.Media.RectangleGeometry(new Rect(0, 0, iconWidth, iconHeight), 8, 8)
             };
             if (SettingsManager.IconVisibilityEffect != IconVisibilityEffect.None)
             {
