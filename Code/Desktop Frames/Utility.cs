@@ -363,9 +363,9 @@ namespace Desktop_Frames
                         try
                         {
                             var c = GetColorFromName(colorName);
-                            byte r = (byte)(c.R * 0.35);
-                            byte g = (byte)(c.G * 0.35);
-                            byte b = (byte)(c.B * 0.35);
+                            byte r = (byte)(c.R * 0.20);
+                            byte g = (byte)(c.G * 0.20);
+                            byte b = (byte)(c.B * 0.20);
                             frameBorder.Background = new System.Windows.Media.SolidColorBrush(
                                 System.Windows.Media.Color.FromArgb(alpha, r, g, b));
                         }

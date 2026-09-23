@@ -7,13 +7,29 @@ using Desktop_Frames;
 public class NonActivatingWindow : Window
 {
     private const int WM_SYSCOMMAND = 0x0112;
-    private const int SC_MAXIMIZE = 0xF030;
-    private const int SC_RESTORE = 0xF120;
-
+    private const int SC_MAXIMIZE  = 0xF030;
+    private const int SC_RESTORE   = 0xF120;
     private const int WM_MOUSEACTIVATE = 0x0021;
-    private const int MA_NOACTIVATE = 3;
-    private const int GWL_EXSTYLE = -20;
+    private const int MA_NOACTIVATE    = 3;
+    private const int GWL_EXSTYLE      = -20;
     private const int WS_EX_NOACTIVATE = 0x08000000;
+
+    // WM_NCHITTEST — edge/corner resize for transparent borderless windows
+    private const int WM_NCHITTEST  = 0x0084;
+    private const int HTCLIENT      = 1;
+    private const int HTLEFT        = 10;
+    private const int HTRIGHT       = 11;
+    private const int HTTOP         = 12;
+    private const int HTTOPLEFT     = 13;
+    private const int HTTOPRIGHT    = 14;
+    private const int HTBOTTOM      = 15;
+    private const int HTBOTTOMLEFT  = 16;
+    private const int HTBOTTOMRIGHT = 17;
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct RECT { public int Left, Top, Right, Bottom; }
+    [DllImport("user32.dll")] private static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+
     private bool _focusPreventionEnabled = true;
 
     // --- Idle Fade-Out Fields ---
@@ -32,20 +48,36 @@ public class NonActivatingWindow : Window
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
+        const int WM_ENTERSIZEMOVE = 0x0231;
+        const int WM_EXITSIZEMOVE  = 0x0232;
 
-        const int WM_ENTERSIZEMOVE = 0x0231; // Resizing starts
-        const int WM_EXITSIZEMOVE = 0x0232;  // Resizing ends
+        if (msg == WM_ENTERSIZEMOVE) Framemanager.OnResizingStarted(this);
+        else if (msg == WM_EXITSIZEMOVE) Framemanager.OnResizingEnded(this);
 
-        if (msg == WM_ENTERSIZEMOVE)
+        // Edge/corner resize hit-testing for transparent borderless windows
+        if (msg == WM_NCHITTEST && ResizeMode == ResizeMode.CanResizeWithGrip)
         {
-            Framemanager.OnResizingStarted(this);
-        }
-        else if (msg == WM_EXITSIZEMOVE)
-        {
-            Framemanager.OnResizingEnded(this);
-        }
+            int lp = lParam.ToInt32();
+            int cx = lp & 0xFFFF; if (cx >= 0x8000) cx -= 0x10000;
+            int cy = (lp >> 16) & 0xFFFF; if (cy >= 0x8000) cy -= 0x10000;
 
-        // Handle existing focus prevention
+            GetWindowRect(hwnd, out RECT r);
+            const int G = 8; // grip width in pixels
+
+            bool left   = cx < r.Left + G;
+            bool right  = cx >= r.Right - G;
+            bool top    = cy < r.Top + G;
+            bool bottom = cy >= r.Bottom - G;
+
+            if (bottom && right)  { handled = true; return new IntPtr(HTBOTTOMRIGHT); }
+            if (bottom && left)   { handled = true; return new IntPtr(HTBOTTOMLEFT); }
+            if (top    && right)  { handled = true; return new IntPtr(HTTOPRIGHT); }
+            if (top    && left)   { handled = true; return new IntPtr(HTTOPLEFT); }
+            if (right)            { handled = true; return new IntPtr(HTRIGHT); }
+            if (left)             { handled = true; return new IntPtr(HTLEFT); }
+            if (bottom)           { handled = true; return new IntPtr(HTBOTTOM); }
+            if (top)              { handled = true; return new IntPtr(HTTOP); }
+        }
 
         if (_focusPreventionEnabled && msg == WM_MOUSEACTIVATE)
         {
@@ -53,7 +85,6 @@ public class NonActivatingWindow : Window
             return new IntPtr(MA_NOACTIVATE);
         }
 
-        // Block Aero Snap maximize/restore commands
         if (msg == WM_SYSCOMMAND)
         {
             int command = wParam.ToInt32() & 0xFFF0;

@@ -1218,7 +1218,7 @@ namespace Desktop_Frames
             menu.Items.Add(optionsItem);
 
             // Global lock toggle
-            var lockItem = new MenuItem { Header = "Frames sperren", IsCheckable = true, IsChecked = SettingsManager.GlobalFramesLocked };
+            var lockItem = new MenuItem { Header = "Lock Frames", IsCheckable = true, IsChecked = SettingsManager.GlobalFramesLocked };
             lockItem.Click += (s, e) => SetGlobalFrameLock(lockItem.IsChecked);
             menu.Items.Add(lockItem);
 
@@ -3730,10 +3730,10 @@ namespace Desktop_Frames
                 string colorName = frame.CustomColor?.ToString();
                 if (string.IsNullOrEmpty(colorName)) colorName = SettingsManager.SelectedColor;
                 var c = Utility.GetColorFromName(colorName);
-                // Darken the tint so it doesn't overpower the wallpaper
-                byte r = (byte)(c.R * 0.35);
-                byte g = (byte)(c.G * 0.35);
-                byte b = (byte)(c.B * 0.35);
+                // Blend: 80% black + 20% accent color so readability is good but identity shows
+                byte r = (byte)(c.R * 0.20);
+                byte g = (byte)(c.G * 0.20);
+                byte b = (byte)(c.B * 0.20);
                 return new System.Windows.Media.SolidColorBrush(
                     System.Windows.Media.Color.FromArgb(alpha, r, g, b));
             }
@@ -5487,7 +5487,7 @@ namespace Desktop_Frames
                 LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.FrameCreation, $"Frame with Id '{frameId}' not found in FrameDataManager.FrameData");
                 return;
             }
-            bool isLocked = currentFrame.IsLocked?.ToString().ToLower() == "true";
+            bool isLocked = SettingsManager.GlobalFramesLocked;
             titlelabel.MouseDown += (sender, e) =>
             {
                 // FIX: Directly call CommitRename logic
@@ -5695,7 +5695,7 @@ namespace Desktop_Frames
                             LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.FrameCreation, $"Frame with Id '{frameId}' not found in FrameDataManager.FrameData during MouseDown");
                             return;
                         }
-                        bool isLocked = currentFrame.IsLocked?.ToString().ToLower() == "true";
+                        bool isLocked = SettingsManager.GlobalFramesLocked;
                         if (!isLocked)
                         {
                             SnapManager.StartDrag(win);
@@ -6899,12 +6899,15 @@ namespace Desktop_Frames
                 TextAlignment = TextAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 Foreground = textBrush,
+                FontFamily = new System.Windows.Media.FontFamily(SettingsManager.GlobalFontFamily),
+                FontSize = 11,
+                FontWeight = FontWeights.Medium,
                 MaxWidth = 70,
                 Opacity = targetIconOpacity
             };
 
             if (!disableShadow)
-                lbl.Effect = new DropShadowEffect { Color = Colors.Black, Direction = 315, ShadowDepth = 2, BlurRadius = 3, Opacity = 0.8 };
+                lbl.Effect = new DropShadowEffect { Color = Colors.Black, Direction = 270, ShadowDepth = 1, BlurRadius = 6, Opacity = 0.95 };
 
             sp.Children.Add(lbl);
             sp.Tag = new { FilePath = filePath, IsFolder = isFolder, Arguments = (string)(iconDict.ContainsKey("Arguments") ? iconDict["Arguments"] : null) };
