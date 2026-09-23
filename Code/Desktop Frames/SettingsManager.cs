@@ -101,7 +101,7 @@ namespace Desktop_Frames
         // --- NEW: Desktop Icon Visibility ---
         public static bool HideDesktopElementsOnStart { get; set; } = false;
         public static bool HideDesktopElementsOnAllFramesHide { get; set; } = false;
-        public static bool ShowDesktopDot { get; set; } = true;
+        public static bool ShowDesktopDot { get; set; } = false;
 
         // --- NEW: Idle Fade-Out Settings ---
         public static bool FramesFadeOutFx { get; set; } = false;
@@ -378,7 +378,7 @@ namespace Desktop_Frames
             // Desktop Icon Visibility
             try { HideDesktopElementsOnStart = data.HideDesktopElementsOnStart ?? false; } catch { HideDesktopElementsOnStart = false; }
             try { HideDesktopElementsOnAllFramesHide = data.HideDesktopElementsOnAllFramesHide ?? false; } catch { HideDesktopElementsOnAllFramesHide = false; }
-            try { ShowDesktopDot = data.ShowDesktopDot ?? true; } catch { ShowDesktopDot = true; }
+            try { ShowDesktopDot = data.ShowDesktopDot ?? false; } catch { ShowDesktopDot = true; }
 
             // Idle Fade-Out
             try { FramesFadeOutFx = data.FramesFadeOutFx ?? false; } catch { FramesFadeOutFx = false; }

@@ -18,6 +18,7 @@ namespace Desktop_Frames
         private static Mutex _mutex;
         private const string UNIQUE_APP_NAME = "Global\\DesktopFramesPlus_Mutex_UniqueId_v2";
         private EventHandler _displaySettingsHandler;
+        private PowerModeChangedEventHandler _powerModeHandler;
 
 
 
@@ -113,6 +114,22 @@ namespace Desktop_Frames
                         Dispatcher.BeginInvoke(new Action(Framemanager.RescheduleAndAdjustAllFrames));
                     SystemEvents.DisplaySettingsChanged += _displaySettingsHandler;
 
+                    // Refresh colors + positions after sleep/wake — prevents stale color scheme on resume
+                    _powerModeHandler = (_, e) =>
+                    {
+                        if (e.Mode == PowerModes.Resume)
+                        {
+                            System.Threading.Tasks.Task.Delay(2500).ContinueWith(_ =>
+                                Dispatcher.BeginInvoke(new Action(() =>
+                                {
+                                    WallpaperColorManager.UpdateWallpaperColor();
+                                    Utility.UpdateFrameVisuals();
+                                    Framemanager.RescheduleAndAdjustAllFrames();
+                                })));
+                        }
+                    };
+                    SystemEvents.PowerModeChanged += _powerModeHandler;
+
                     // Initialize TrayManager BEFORE frames
                     _trayManager = new TrayManager();
                     _trayManager.InitializeTray();
@@ -195,6 +212,8 @@ namespace Desktop_Frames
         {
             if (_displaySettingsHandler != null)
                 SystemEvents.DisplaySettingsChanged -= _displaySettingsHandler;
+            if (_powerModeHandler != null)
+                SystemEvents.PowerModeChanged -= _powerModeHandler;
             InterCore.Cleanup();
             try
             {

@@ -53,7 +53,17 @@ namespace Desktop_Frames
             FadeTo(w, 1.0);
         }
 
-        private static void HideLine(Window w) { if (w != null) FadeTo(w, 0.0); }
+        private static void HideLine(Window w)
+        {
+            if (w == null) return;
+            FadeTo(w, 0.0);
+        }
+
+        private static void CloseLines()
+        {
+            try { _lineH?.Close(); } catch { } finally { _lineH = null; }
+            try { _lineV?.Close(); } catch { } finally { _lineV = null; }
+        }
 
         private static void FadeTo(Window w, double target)
         {
@@ -74,8 +84,7 @@ namespace Desktop_Frames
         {
             try
             {
-                HideAllLines();
-                if (ActiveDragWindow != win) return;
+                CloseLines(); if (ActiveDragWindow != win) return;
 
                 string myId = GetFrameIdFromWindow(win);
                 if (myId != null && FrameDataManager.DockingMap.TryGetValue(myId, out var parentIds))
@@ -147,7 +156,7 @@ namespace Desktop_Frames
 
             win.PreviewMouseLeftButtonUp += (s, e) =>
             {
-                HideAllLines();
+                CloseLines();
                 if (myId != null && FrameDataManager.DockingMap.TryGetValue(myId, out var pIds))
                     FrameDataManager.UpdateDockedRelationships(myId, pIds);
                 else if (myId != null)
