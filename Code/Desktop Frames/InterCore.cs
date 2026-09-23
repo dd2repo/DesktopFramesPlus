@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -187,7 +187,7 @@ namespace Desktop_Frames
 
             try
             {
-                var border = win.Content as Border;
+                var border = Framemanager.GetFrameBorder(win);
                 if (border == null) return;
 
                 LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.UI, $"InterCore: Activating Legendary Mode for {frameId}");
@@ -264,7 +264,7 @@ namespace Desktop_Frames
             {
                 LogManager.Log(LogManager.LogLevel.Info, LogManager.LogCategory.UI, $"InterCore: Deactivating Legendary Mode for {frameId}");
 
-                var border = win.Content as Border;
+                var border = Framemanager.GetFrameBorder(win);
                 if (border != null)
                 {
                     // Restore Border

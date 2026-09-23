@@ -1,4 +1,4 @@
-﻿using Strings = Desktop_Frames.Localization.Strings;
+using Strings = Desktop_Frames.Localization.Strings;
 using IWshRuntimeLibrary;
 using Microsoft.VisualBasic;
 using Newtonsoft.Json.Linq;
@@ -1551,7 +1551,7 @@ namespace Desktop_Frames
                             if (win != null)
                             {
                                 Framemanager.RefreshPortalNavBar(win, liveFrame);
-                                var dockPanel = (win.Content as Border)?.Child as DockPanel;
+                                var dockPanel = (Framemanager.GetFrameBorder(win))?.Child as DockPanel;
                                 dockPanel?.UpdateLayout(); // Force DockPanel to recalculate top bar boundaries
                             }
                         }
@@ -1812,7 +1812,7 @@ namespace Desktop_Frames
                     string fId = win.Tag?.ToString() ?? _frame.Id?.ToString();
                     var liveFrame = FrameDataManager.FrameData.FirstOrDefault(f => f.Id?.ToString() == fId) ?? _frame;
                     Framemanager.RefreshPortalNavBar(win, liveFrame);
-                    var dockPanel = (win.Content as Border)?.Child as DockPanel;
+                    var dockPanel = (Framemanager.GetFrameBorder(win))?.Child as DockPanel;
                     dockPanel?.UpdateLayout();
                 }
             }, System.Windows.Threading.DispatcherPriority.Loaded);

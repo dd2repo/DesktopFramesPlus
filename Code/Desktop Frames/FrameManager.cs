@@ -300,7 +300,7 @@ namespace Desktop_Frames
             var allFrames = System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>();
             foreach (var win in allFrames)
             {
-                var border = win.Content as Border;
+                var border = GetFrameBorder(win);
                 var dockPanel = border?.Child as DockPanel;
                 var scrollViewer = dockPanel?.Children.OfType<ScrollViewer>().FirstOrDefault();
 
@@ -555,7 +555,7 @@ namespace Desktop_Frames
         {
             try
             {
-                var border = frameWindow.Content as Border;
+                var border = GetFrameBorder(frameWindow);
                 var dockPanel = border?.Child as DockPanel;
                 if (dockPanel == null) return;
 
@@ -731,7 +731,7 @@ namespace Desktop_Frames
         {
             try
             {
-                var cborder = win.Content as Border;
+                var cborder = GetFrameBorder(win);
                 if (cborder == null) return;
 
                 Grid mainGrid = cborder.Child as Grid;
@@ -2587,7 +2587,7 @@ namespace Desktop_Frames
                             };
                             win.BeginAnimation(Window.HeightProperty, heightAnimation);
                             // Update WrapPanel visibility
-                            var border = win.Content as Border;
+                            var border = GetFrameBorder(win);
                             if (border != null)
                             {
                                 var dockPanel = border.Child as DockPanel;
@@ -2817,7 +2817,7 @@ namespace Desktop_Frames
                     $"RefreshFrameContentSimple: switching to tab {tabIndex}");
 
                 // 1. Find the WrapPanel
-                var border = frameWindow.Content as Border;
+                var border = GetFrameBorder(frameWindow);
                 var dockPanel = border?.Child as DockPanel;
                 var scrollViewer = dockPanel?.Children.OfType<ScrollViewer>().FirstOrDefault();
                 var wrapPanel = scrollViewer?.Content as WrapPanel;
@@ -3744,6 +3744,14 @@ namespace Desktop_Frames
             }
         }
 
+
+        // Unwraps the inner Border from either old (Border) or new (outer DockPanel) window content
+        internal static Border GetFrameBorder(Window win)
+        {
+            if (win.Content is DockPanel outerDock && outerDock.Tag?.ToString() == "OUTER_FRAME_DOCK")
+                return outerDock.Children.OfType<Border>().FirstOrDefault();
+            return GetFrameBorder(win);
+        }
         // Wraps the frame border in an outer DockPanel so the tab strip can live
         // above the semi-transparent frame background rather than inside it.
         private static DockPanel BuildOuterContent(Border cborder)
@@ -4329,7 +4337,7 @@ namespace Desktop_Frames
                 }
                 win.Height = targetHeight;
                 // Apply WrapPanel visibility
-                var border = win.Content as Border;
+                var border = GetFrameBorder(win);
                 if (border != null)
                 {
                     var dockPanel = border.Child as DockPanel;
@@ -4475,7 +4483,7 @@ namespace Desktop_Frames
                 if (isOverlayActive == turnOn) return; // Prevent redundant drawing
                 isOverlayActive = turnOn;
 
-                var borderNode = win.Content as Border;
+                var borderNode = GetFrameBorder(win);
                 var dockNode = borderNode?.Child as DockPanel;
                 var scrollNode = dockNode?.Children.OfType<ScrollViewer>().FirstOrDefault();
                 var wpNode = scrollNode?.Content as WrapPanel;
@@ -4572,7 +4580,7 @@ namespace Desktop_Frames
                     };
                     heightAnimation.Completed += (animSender, animArgs) =>
                     {
-                        var borderNode = win.Content as Border;
+                        var borderNode = GetFrameBorder(win);
                         if (borderNode?.Child is DockPanel dockNode)
                         {
                             var scrollNode = dockNode.Children.OfType<ScrollViewer>().FirstOrDefault();
@@ -4636,7 +4644,7 @@ namespace Desktop_Frames
                         };
                         heightAnimation.Completed += (animSender, animArgs) =>
                         {
-                            var borderNode = win.Content as Border;
+                            var borderNode = GetFrameBorder(win);
                             if (borderNode?.Child is DockPanel dockNode)
                             {
                                 var scrollNode = dockNode.Children.OfType<ScrollViewer>().FirstOrDefault();
@@ -5560,7 +5568,7 @@ namespace Desktop_Frames
                         {
                             // DebugLog("ANIMATION", frameId, "ROLLUP animation completed");
                             // Update WrapPanel visibility
-                            var border = win.Content as Border;
+                            var border = GetFrameBorder(win);
                             if (border != null)
                             {
                                 var dockPanel = border.Child as DockPanel;
@@ -5623,7 +5631,7 @@ namespace Desktop_Frames
                         {
                             // DebugLog("ANIMATION", frameId, "ROLLDOWN animation completed");
                             // Update WrapPanel visibility
-                            var border = win.Content as Border;
+                            var border = GetFrameBorder(win);
                             if (border != null)
                             {
                                 var dockPanel = border.Child as DockPanel;
@@ -6618,7 +6626,7 @@ namespace Desktop_Frames
                     try
                     {
                         // Find the TextBox that was created in InitContent()
-                        var border = win.Content as Border;
+                        var border = GetFrameBorder(win);
                         var dockPanel = border?.Child as DockPanel;
                         var noteTextBox = dockPanel?.Children.OfType<TextBox>().FirstOrDefault();
                         if (noteTextBox != null)
@@ -7718,7 +7726,7 @@ namespace Desktop_Frames
                 if (win == null) return;
 
                 WrapPanel wpcont = null;
-                var border = win.Content as Border;
+                var border = GetFrameBorder(win);
                 var dockPanel = border?.Child as DockPanel;
                 var scrollViewer = dockPanel?.Children.OfType<ScrollViewer>().FirstOrDefault();
                 if (scrollViewer != null) wpcont = scrollViewer.Content as WrapPanel;
@@ -7899,7 +7907,7 @@ namespace Desktop_Frames
         {
             try
             {
-                var border = win.Content as Border;
+                var border = GetFrameBorder(win);
                 var dockPanel = border?.Child as DockPanel;
                 var scrollViewer = dockPanel?.Children.OfType<ScrollViewer>().FirstOrDefault();
                 return scrollViewer?.Content as WrapPanel;
@@ -8219,7 +8227,7 @@ namespace Desktop_Frames
                 int updatedItems = 0;
                 foreach (var win in System.Windows.Application.Current.Windows.OfType<NonActivatingWindow>())
                 {
-                    var wpcont = ((win.Content as Border)?.Child as DockPanel)?.Children
+                    var wpcont = ((GetFrameBorder(win))?.Child as DockPanel)?.Children
                         .OfType<ScrollViewer>().FirstOrDefault()?.Content as WrapPanel;
                     if (wpcont != null)
                     {

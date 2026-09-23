@@ -1283,7 +1283,7 @@ namespace Desktop_Frames
             {
                 LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.UI, $"Refreshing Note visuals for frame '{_frame.Title}'");
 
-                var border = win.Content as Border;
+                var border = Framemanager.GetFrameBorder(win);
                 var dockPanel = border?.Child as DockPanel;
 
                 if (dockPanel != null)

@@ -199,7 +199,7 @@ namespace Desktop_Frames
 
         public static void ApplyTintAndColorToFrame(Window frame, string colorName = null)
         {
-            var frameControl = frame.Content as Border; // Matches your structure
+            var frameControl = Framemanager.GetFrameBorder(frame as NonActivatingWindow ?? (frame as System.Windows.Window));
             if (frameControl == null) return;
 
             // --- THE ARCHITECTURAL FIX ---
@@ -385,7 +385,7 @@ namespace Desktop_Frames
 
                         if (type == "Note" && FrameData != null)
                         {
-                            var border = win.Content as Border;
+                    var border = Framemanager.GetFrameBorder(win);
                             var dockPanel = border?.Child as DockPanel;
                             var noteTextBox = dockPanel?.Children.OfType<TextBox>().FirstOrDefault();
 

@@ -19,6 +19,13 @@ namespace Desktop_Frames
     /// </summary>
     public static class TabManager
     {
+        // Unwraps the inner Border from either the old (Border direct) or new (outer DockPanel) window structure
+        private static Border GetFrameBorder(NonActivatingWindow win)
+        {
+            if (win.Content is DockPanel outerDock && outerDock.Tag?.ToString() == "OUTER_FRAME_DOCK")
+                return outerDock.Children.OfType<Border>().FirstOrDefault();
+            return win.Content as Border;
+        }
         // TABS FEATURE: Dynamically refresh the tab strip UI (Ghost Arrows)
         // v2.5. 4.181: Adds smart left/right chevrons that appear only when tabs are hidden.
         public static void RefreshTabStripUI(NonActivatingWindow frameWindow, dynamic frame)
@@ -446,7 +453,7 @@ namespace Desktop_Frames
                 LogManager.Log(LogManager.LogLevel.Debug, LogManager.LogCategory.UI, $"RenameTab called for frame '{frame.Title}', tab {tabIndex}");
 
                 // 1. Find the main DockPanel
-                var border = frameWindow.Content as Border;
+                var border = GetFrameBorder(frameWindow);
                 var dockPanel = border?.Child as DockPanel;
                 if (dockPanel == null) return;
 
@@ -1024,7 +1031,7 @@ namespace Desktop_Frames
         {
             try
             {
-                var border = frameWindow.Content as Border;
+                var border = GetFrameBorder(frameWindow);
                 var dockPanel = border?.Child as DockPanel;
                 if (dockPanel == null) return;
 
@@ -1075,7 +1082,7 @@ namespace Desktop_Frames
         {
             try
             {
-                var border = frameWindow.Content as Border;
+                var border = GetFrameBorder(frameWindow);
                 if (border == null) return;
                 var dockPanel = border.Child as DockPanel;
                 if (dockPanel == null) return;

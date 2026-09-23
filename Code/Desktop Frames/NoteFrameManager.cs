@@ -341,7 +341,7 @@ namespace Desktop_Frames
                         var buttonParentWindow = FindParentWindow(noteTextBox);
                         if (buttonParentWindow != null)
                         {
-                            var border = buttonParentWindow.Content as Border;
+                            var border = Framemanager.GetFrameBorder(buttonParentWindow);
                             if (border != null)
                             {
                                 Grid overlayGrid = new Grid();
