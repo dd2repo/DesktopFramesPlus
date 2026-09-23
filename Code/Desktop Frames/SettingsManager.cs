@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,7 +44,7 @@ namespace Desktop_Frames
         public static int MenuIcon { get; set; } = 0;
         public static int LockIcon { get; set; } = 0;
         public static string SelectedColor { get; set; } = "Gray";
-        public static bool IsLogEnabled { get; set; } = false;
+        public static bool IsLogEnabled { get; set; } = true;
         public static int MaxDisplayNameLength { get; set; } = 20;
         public static int PortalBackgroundOpacity { get; set; } = 30;
         public static bool EnableIconGlowEffect { get; set; } = true;
@@ -122,7 +122,7 @@ namespace Desktop_Frames
 
         public static string SpotSearchModifier { get; set; } = "Control";
         public static bool EnableDimensionSnap { get; set; } = false;
-        public static bool SingleClickToLaunch { get; set; } = true;
+        public static bool SingleClickToLaunch { get; set; } = false;
 
       
 
@@ -335,8 +335,8 @@ namespace Desktop_Frames
             try { MenuIcon = data.MenuIcon ?? 0; } catch { MenuIcon = 0; }
             try { LockIcon = data.LockIcon ?? 0; } catch { LockIcon = 0; }
             try { SelectedColor = data.SelectedColor ?? "Gray"; } catch { SelectedColor = "Gray"; }
-            try { IsLogEnabled = data.IsLogEnabled ?? false; } catch { IsLogEnabled = false; }
-            try { SingleClickToLaunch = data.SingleClickToLaunch ?? true; } catch { SingleClickToLaunch = true; }
+            try { IsLogEnabled = data.IsLogEnabled ?? true; } catch { IsLogEnabled = false; }
+            try { SingleClickToLaunch = data.SingleClickToLaunch ?? false; } catch { SingleClickToLaunch = true; }
             try { EnableDimensionSnap = data.EnableDimensionSnap ?? false; } catch { EnableDimensionSnap = false; }
             try { PortalBackgroundOpacity = data.PortalBackgroundOpacity ?? 30; } catch { PortalBackgroundOpacity = 30; }
             try { EnableIconGlowEffect = data.EnableIconGlowEffect ?? true; } catch { EnableIconGlowEffect = true; }
