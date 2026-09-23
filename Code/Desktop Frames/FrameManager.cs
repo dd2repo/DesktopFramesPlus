@@ -3722,7 +3722,7 @@ namespace Desktop_Frames
 
         // Compute a semi-transparent colored brush that blends the frame's accent color
         // with transparency so the wallpaper shows through but readability stays decent.
-        private static System.Windows.Media.SolidColorBrush BuildFrameBackground(dynamic frame)
+        private static System.Windows.Media.Brush BuildFrameBackground(dynamic frame)
         {
             byte alpha = (byte)(SettingsManager.GlobalFrameAlpha * 255 / 100);
             try
@@ -3730,28 +3730,34 @@ namespace Desktop_Frames
                 string colorName = frame.CustomColor?.ToString();
                 if (string.IsNullOrEmpty(colorName)) colorName = SettingsManager.SelectedColor;
                 var c = Utility.GetColorFromName(colorName);
-                // Blend: 80% black + 20% accent color so readability is good but identity shows
-                byte r = (byte)(c.R * 0.20);
-                byte g = (byte)(c.G * 0.20);
-                byte b = (byte)(c.B * 0.20);
-                return new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromArgb(alpha, r, g, b));
+                byte rT = (byte)(c.R * 0.28); byte gT = (byte)(c.G * 0.28); byte bT = (byte)(c.B * 0.28);
+                byte rB = (byte)(c.R * 0.10); byte gB = (byte)(c.G * 0.10); byte bB = (byte)(c.B * 0.10);
+                var grad = new System.Windows.Media.LinearGradientBrush();
+                grad.StartPoint = new System.Windows.Point(0, 0);
+                grad.EndPoint   = new System.Windows.Point(0, 1);
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rT, gT, bT), 0.0));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rB, gB, bB), 1.0));
+                return grad;
             }
             catch
             {
-                return new System.Windows.Media.SolidColorBrush(
-                    System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
+                var fb = new System.Windows.Media.LinearGradientBrush();
+                fb.StartPoint = new System.Windows.Point(0, 0);
+                fb.EndPoint   = new System.Windows.Point(0, 1);
+                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 15, 15, 15), 0.0));
+                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0), 1.0));
+                return fb;
             }
         }
-
 
         // Unwraps the inner Border from either old (Border) or new (outer DockPanel) window content
         internal static Border GetFrameBorder(Window win)
         {
-            if (win.Content is DockPanel outerDock && outerDock.Tag?.ToString() == "OUTER_FRAME_DOCK")
+            if (win?.Content is DockPanel outerDock && outerDock.Tag?.ToString() == "OUTER_FRAME_DOCK")
                 return outerDock.Children.OfType<Border>().FirstOrDefault();
-            return GetFrameBorder(win);
+            return win?.Content as Border;
         }
+
         // Wraps the frame border in an outer DockPanel so the tab strip can live
         // above the semi-transparent frame background rather than inside it.
         private static DockPanel BuildOuterContent(Border cborder)
@@ -3958,7 +3964,9 @@ namespace Desktop_Frames
             // Create a Grid for the titlebar - move here to ensure it is created before mouse handler
             Grid titleGrid = new Grid
             {
-                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(20, 0, 0, 0))
+                                Background = new SolidColorBrush(System.Windows.Media.Color.FromArgb(30, 0, 0, 0)),
+                MinHeight = 22,
+                MaxHeight = 28
             };
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(0, GridUnitType.Pixel) }); // Col 0: Spacer
             titleGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // Col 1: Title

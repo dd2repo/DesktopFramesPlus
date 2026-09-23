@@ -356,6 +356,7 @@ namespace Desktop_Frames
                     var frameBorder = (outerDock?.Tag?.ToString() == "OUTER_FRAME_DOCK")
                         ? outerDock.Children.OfType<System.Windows.Controls.Border>().FirstOrDefault()
                         : win.Content as System.Windows.Controls.Border;
+                    
                     if (frameBorder != null)
                     {
                         byte alpha = (byte)(SettingsManager.GlobalFrameAlpha * 255 / 100);
@@ -363,20 +364,21 @@ namespace Desktop_Frames
                         try
                         {
                             var c = GetColorFromName(colorName);
-                            byte r = (byte)(c.R * 0.20);
-                            byte g = (byte)(c.G * 0.20);
-                            byte b = (byte)(c.B * 0.20);
-                            frameBorder.Background = new System.Windows.Media.SolidColorBrush(
-                                System.Windows.Media.Color.FromArgb(alpha, r, g, b));
+                            byte rT = (byte)(c.R * 0.28); byte gT = (byte)(c.G * 0.28); byte bT = (byte)(c.B * 0.28);
+                            byte rB = (byte)(c.R * 0.10); byte gB = (byte)(c.G * 0.10); byte bB = (byte)(c.B * 0.10);
+                            var grad = new System.Windows.Media.LinearGradientBrush();
+                            grad.StartPoint = new System.Windows.Point(0, 0);
+                            grad.EndPoint   = new System.Windows.Point(0, 1);
+                            grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rT, gT, bT), 0.0));
+                            grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rB, gB, bB), 1.0));
+                            frameBorder.Background = grad;
                         }
                         catch
                         {
-                            frameBorder.Background = new System.Windows.Media.SolidColorBrush(
-                                System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
+                            frameBorder.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0));
                         }
                     }
-
-                    // 5. Update Note Text Contrast (if applicable)
+// 5. Update Note Text Contrast (if applicable)
                     try
                     {
                         string type = null;
