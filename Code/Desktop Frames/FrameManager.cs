@@ -6803,7 +6803,8 @@ namespace Desktop_Frames
             {
                 Width = iconWidth,
                 Height = iconHeight,
-                Margin = new Thickness(5)
+                Margin = new Thickness(5),
+                Clip = new System.Windows.Media.RectangleGeometry(new Rect(0, 0, iconWidth, iconHeight), 4, 4)
             };
             if (SettingsManager.IconVisibilityEffect != IconVisibilityEffect.None)
             {
@@ -6928,24 +6929,33 @@ namespace Desktop_Frames
             sp.Tag = new { FilePath = filePath, IsFolder = isFolder, Arguments = (string)(iconDict.ContainsKey("Arguments") ? iconDict["Arguments"] : null) };
             sp.ToolTip = new ToolTip { Content = originalDisplayName + "\nLoading target..." };
 
-            // macOS-like hover: scale zoom + semi-transparent highlight
+            // Subtle hover: rounded highlight + gentle lift
             sp.RenderTransformOrigin = new System.Windows.Point(0.5, 0.5);
             sp.RenderTransform = new System.Windows.Media.ScaleTransform(1.0, 1.0);
+            sp.Loaded += (ls, le) => {
+                try { sp.Clip = new System.Windows.Media.RectangleGeometry(new Rect(0, 0, sp.ActualWidth, sp.ActualHeight), 6, 6); } catch { }
+            };
             sp.MouseEnter += (hoverS, hoverE) =>
             {
-                sp.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(45, 255, 255, 255));
-                var st = (System.Windows.Media.ScaleTransform)sp.RenderTransform;
-                var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
-                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.18, TimeSpan.FromMilliseconds(130)) { EasingFunction = ease });
-                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new System.Windows.Media.Animation.DoubleAnimation(1.0, 1.18, TimeSpan.FromMilliseconds(130)) { EasingFunction = ease });
+                try {
+                    sp.Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromArgb(35, 255, 255, 255));
+                    if (sp.RenderTransform is System.Windows.Media.ScaleTransform st) {
+                        var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseOut };
+                        st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new System.Windows.Media.Animation.DoubleAnimation(st.ScaleX, 1.08, TimeSpan.FromMilliseconds(150)) { EasingFunction = ease });
+                        st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new System.Windows.Media.Animation.DoubleAnimation(st.ScaleY, 1.08, TimeSpan.FromMilliseconds(150)) { EasingFunction = ease });
+                    }
+                } catch { }
             };
             sp.MouseLeave += (hoverS, hoverE) =>
             {
-                sp.Background = System.Windows.Media.Brushes.Transparent;
-                var st = (System.Windows.Media.ScaleTransform)sp.RenderTransform;
-                var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn };
-                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new System.Windows.Media.Animation.DoubleAnimation(1.18, 1.0, TimeSpan.FromMilliseconds(100)) { EasingFunction = ease });
-                st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new System.Windows.Media.Animation.DoubleAnimation(1.18, 1.0, TimeSpan.FromMilliseconds(100)) { EasingFunction = ease });
+                try {
+                    sp.Background = System.Windows.Media.Brushes.Transparent;
+                    if (sp.RenderTransform is System.Windows.Media.ScaleTransform st) {
+                        var ease = new System.Windows.Media.Animation.CubicEase { EasingMode = System.Windows.Media.Animation.EasingMode.EaseIn };
+                        st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleXProperty, new System.Windows.Media.Animation.DoubleAnimation(st.ScaleX, 1.0, TimeSpan.FromMilliseconds(120)) { EasingFunction = ease });
+                        st.BeginAnimation(System.Windows.Media.ScaleTransform.ScaleYProperty, new System.Windows.Media.Animation.DoubleAnimation(st.ScaleY, 1.0, TimeSpan.FromMilliseconds(120)) { EasingFunction = ease });
+                    }
+                } catch { }
             };
 
             wpcont.Children.Add(sp); // ADD TO UI INSTANTLY!
