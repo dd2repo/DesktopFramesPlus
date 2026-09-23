@@ -84,7 +84,7 @@ namespace Desktop_Frames
 
         // --- Global Frame Style ---
         public static bool UseGlobalFrameStyle { get; set; } = false;
-        public static int GlobalFrameAlpha { get; set; } = 55; // 0=fully transparent, 100=fully opaque
+        public static int GlobalFrameAlpha { get; set; } = 65; // 0=fully transparent, 100=fully opaque
         public static bool GlobalFramesLocked { get; set; } = false;
         public static int DefaultItemFontSize { get; set; } = 12;
 

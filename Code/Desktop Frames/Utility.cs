@@ -364,13 +364,16 @@ namespace Desktop_Frames
                         try
                         {
                             var c = GetColorFromName(colorName);
-                            byte rT = (byte)(c.R * 0.28); byte gT = (byte)(c.G * 0.28); byte bT = (byte)(c.B * 0.28);
-                            byte rB = (byte)(c.R * 0.10); byte gB = (byte)(c.G * 0.10); byte bB = (byte)(c.B * 0.10);
+                            byte rT = (byte)(c.R * 0.55); byte gT = (byte)(c.G * 0.55); byte bT = (byte)(c.B * 0.55);
+                            byte rM = (byte)(c.R * 0.35); byte gM = (byte)(c.G * 0.35); byte bM = (byte)(c.B * 0.35);
+                            byte rB = (byte)(c.R * 0.18); byte gB = (byte)(c.G * 0.18); byte bB = (byte)(c.B * 0.18);
+                            byte aBot2 = (byte)Math.Min(255, alpha * 1.15);
                             var grad = new System.Windows.Media.LinearGradientBrush();
                             grad.StartPoint = new System.Windows.Point(0, 0);
                             grad.EndPoint   = new System.Windows.Point(0, 1);
                             grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rT, gT, bT), 0.0));
-                            grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rB, gB, bB), 1.0));
+                            grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, rM, gM, bM), 0.45));
+                            grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(aBot2, rB, gB, bB), 1.0));
                             frameBorder.Background = grad;
                         }
                         catch

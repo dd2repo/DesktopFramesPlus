@@ -3730,17 +3730,18 @@ namespace Desktop_Frames
                 string colorName = frame.CustomColor?.ToString();
                 if (string.IsNullOrEmpty(colorName)) colorName = SettingsManager.SelectedColor;
                 var c = Utility.GetColorFromName(colorName);
-                byte alphaTop = (byte)Math.Min(255, alpha * 0.75);
-                byte alphaMid = (byte)Math.Min(255, alpha * 0.55);
-                byte alphaBot = (byte)Math.Min(255, alpha * 1.10);
-                byte rT = (byte)(c.R * 0.45); byte gT = (byte)(c.G * 0.45); byte bT = (byte)(c.B * 0.45);
-                byte rM = (byte)(c.R * 0.22); byte gM = (byte)(c.G * 0.22); byte bM = (byte)(c.B * 0.22);
+                // Color-based gradient: stays in the hue family, no black
+                // Top: vivid accent, Mid: medium, Bottom: dark accent (not black)
+                byte rT = (byte)(c.R * 0.55); byte gT = (byte)(c.G * 0.55); byte bT = (byte)(c.B * 0.55);
+                byte rM = (byte)(c.R * 0.35); byte gM = (byte)(c.G * 0.35); byte bM = (byte)(c.B * 0.35);
+                byte rB = (byte)(c.R * 0.18); byte gB = (byte)(c.G * 0.18); byte bB = (byte)(c.B * 0.18);
+                byte aTop = alpha; byte aMid = alpha; byte aBot = (byte)Math.Min(255, alpha * 1.15);
                 var grad = new System.Windows.Media.LinearGradientBrush();
                 grad.StartPoint = new System.Windows.Point(0, 0);
                 grad.EndPoint   = new System.Windows.Point(0, 1);
-                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alphaTop, rT, gT, bT), 0.0));
-                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alphaMid, rM, gM, bM), 0.35));
-                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alphaBot, 0, 0, 0), 1.0));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(aTop, rT, gT, bT), 0.0));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(aMid, rM, gM, bM), 0.45));
+                grad.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(aBot, rB, gB, bB), 1.0));
                 return grad;
             }
             catch
@@ -3748,8 +3749,8 @@ namespace Desktop_Frames
                 var fb = new System.Windows.Media.LinearGradientBrush();
                 fb.StartPoint = new System.Windows.Point(0, 0);
                 fb.EndPoint   = new System.Windows.Point(0, 1);
-                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 20, 20, 20), 0.0));
-                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 0, 0, 0), 1.0));
+                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 30, 30, 30), 0.0));
+                fb.GradientStops.Add(new System.Windows.Media.GradientStop(System.Windows.Media.Color.FromArgb(alpha, 10, 10, 10), 1.0));
                 return fb;
             }
         }
