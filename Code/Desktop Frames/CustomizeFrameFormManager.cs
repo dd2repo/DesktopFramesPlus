@@ -796,6 +796,7 @@ namespace Desktop_Frames
         {
             ApplyRuntimeChanges(); // --- SPEED FIX: Update visuals instantly first ---
             SaveAllPropertiesToJson(); // Then save to JSON
+            Utility.UpdateFrameVisuals(); // Restore gradient background overwritten by ApplyTintAndColorToFrame
             _result = true; // Mark as successful so if they close later, it counts as saved
         }
 
@@ -917,6 +918,7 @@ namespace Desktop_Frames
                     }
                 });
 
+                Utility.UpdateFrameVisuals(); // Restore gradient background overwritten by UpdateFrameProperty
                 _result = true;
             }
             catch (Exception ex)
